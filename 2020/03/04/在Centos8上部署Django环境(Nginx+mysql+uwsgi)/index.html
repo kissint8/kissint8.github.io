@@ -15,7 +15,7 @@
 <meta property="og:description" content="前言:笔者通过阿里云的学生”在家实践计划“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇参考博文。如有疑问欢迎大家在评区留言。附言:以下操作，笔者都是以root身份进">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-03-04T12:57:28.010Z">
-<meta property="article:modified_time" content="2020-03-04T12:57:29.787Z">
+<meta property="article:modified_time" content="2020-03-04T13:00:58.271Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -91,7 +91,6 @@
         <blockquote>
 <p>前言:笔者通过阿里云的学生”<a href="https://developer.aliyun.com/adc/student/#ecscolleges-collocation-stu" target="_blank" rel="noopener">在家实践计划</a>“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇<a href="https://blog.csdn.net/qq_43232506/article/details/102816659" target="_blank" rel="noopener">参考博文</a>。如有疑问欢迎大家在评区留言。<br>附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。</p>
 </blockquote>
-<p>@<a href="本文目录">toc</a></p>
 <h2 id="1-Nginx"><a href="#1-Nginx" class="headerlink" title="1.Nginx"></a>1.Nginx</h2><h5 id="1-1阿里云放通80端口"><a href="#1-1阿里云放通80端口" class="headerlink" title="1.1阿里云放通80端口"></a>1.1阿里云放通80端口</h5><p>在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考<a href="https://help.aliyun.com/document_detail/25475.html?spm=5176.2020520101.121.1.57bb4df5DMKEqy" target="_blank" rel="noopener">官方说明</a>。</p>
 <h5 id="1-2安装nginx"><a href="#1-2安装nginx" class="headerlink" title="1.2安装nginx"></a>1.2安装nginx</h5><p>由于笔者对nginx的版本没有过多要求，此处采用dnf包管理方式安装，此处笔者dnf安装的是14.1版本。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dnf install -y nginx</span><br></pre></td></tr></table></figure>
@@ -178,7 +177,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/" data-id="ck7dbtn9n0000d8nrdnqr54l7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/" data-id="ck7dbzwry0002sknradyrcrex" class="article-share-link">Share</a>
       
       
     </footer>
@@ -186,6 +185,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          基于DosBox的Inter汇编虚拟环境部署
+        
+      </div>
+    </a>
   
   
     <a href="/2020/03/04/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
@@ -225,6 +233,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">基于DosBox的Inter汇编虚拟环境部署</a>
+          </li>
         
           <li>
             <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">在Centos8上部署Django环境(Nginx+mysql+uwsgi)</a>

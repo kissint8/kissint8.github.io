@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>基于DosBox的Inter汇编虚拟环境部署 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="包含DosBox安装包和一组MASM+LINK+EDIT+DEBUG配套工具的包可在上方链接下载。软件配置环境:Win10  Win7_64  Win7_32   (笔者以下内容 基于Win10主流机,Win7同理) 1.创建工程目录在电脑上创建一个文件夹用来充当我们存放工具、代码的工程目录。笔者创建的是(E:\lb)，我们将MASM文件夹放在该目录下，如图: 2.安装DOSBox双击压缩包中的D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于DosBox的Inter汇编虚拟环境部署">
+<meta property="og:url" content="http://yoursite.com/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="包含DosBox安装包和一组MASM+LINK+EDIT+DEBUG配套工具的包可在上方链接下载。软件配置环境:Win10  Win7_64  Win7_32   (笔者以下内容 基于Win10主流机,Win7同理) 1.创建工程目录在电脑上创建一个文件夹用来充当我们存放工具、代码的工程目录。笔者创建的是(E:\lb)，我们将MASM文件夹放在该目录下，如图: 2.安装DOSBox双击压缩包中的D">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303173948207.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020030317401645.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303174028860.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020030317403856.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303174059448.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303174110648.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303174129736.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200303174155303.png">
+<meta property="article:published_time" content="2020-03-04T13:01:47.823Z">
+<meta property="article:modified_time" content="2020-03-04T13:01:49.386Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200303173948207.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-基于DosBox的Inter汇编虚拟环境部署" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/" class="article-date">
+  <time datetime="2020-03-04T13:01:47.823Z" itemprop="datePublished">2020-03-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      基于DosBox的Inter汇编虚拟环境部署
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>包含DosBox安装包和一组MASM+LINK+EDIT+DEBUG配套工具的包可在上方链接下载。<br>软件配置环境:Win10  Win7_64  Win7_32   (笔者以下内容 基于Win10主流机,Win7同理)</p>
+<h3 id="1-创建工程目录"><a href="#1-创建工程目录" class="headerlink" title="1.创建工程目录"></a>1.创建工程目录</h3><p>在电脑上创建一个文件夹用来充当我们存放工具、代码的工程目录。<br>笔者创建的是(E:\lb)，我们将MASM文件夹放在该目录下，如图:<br><img src="https://img-blog.csdnimg.cn/20200303173948207.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h3 id="2-安装DOSBox"><a href="#2-安装DOSBox" class="headerlink" title="2.安装DOSBox"></a>2.安装DOSBox</h3><p>双击压缩包中的DOSBox0.74-win32-installer.exe 以安装<strong>DOSBox</strong>(这是一款自带DOS的X86仿真器)安装过程中选择好安装目录然后一路Next即可，安装成功后桌面上会出现DosBox的快捷方式。<br><img src="https://img-blog.csdnimg.cn/2020030317401645.png" alt="在这里插入图片描述"></p>
+<h3 id="3-自动挂载工作空间"><a href="#3-自动挂载工作空间" class="headerlink" title="3.自动挂载工作空间"></a>3.自动挂载工作空间</h3><p>双击打开快捷方式以后会出现两个窗口(脚本控制窗与软件窗)，如下图红圈中内容，是本机当前用户DosBox的配置文件的路径。</p>
+<p><img src="https://img-blog.csdnimg.cn/20200303174028860.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p> 选中该路径后，Ctrl+C复制到资源管理器中，回车(<strong>选择记事本</strong>)打开配置文件。拉至最底部，在“autoexec”配置字段下加入如下图三条命令并保存退出。  </p>
+<p><img src="https://img-blog.csdnimg.cn/2020030317403856.png" alt="在这里插入图片描述"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#[autoexec]字段下加入的命令会在DOSBox开启后自动执行，免去了每次开启都进行挂载#</span><br><span class="line">MOUNT C: E:\lb  			#是将刚才创建的工作目录挂载到C盘(此处的C盘为虚拟盘符可自由指定) </span><br><span class="line">C:                			#是切换到C盘盘符</span><br><span class="line">PATH&#x3D;C:\MASM;%PATH%			#将汇编工具目录加入环境变量PATH中</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-检查效果"><a href="#4-检查效果" class="headerlink" title="4.检查效果"></a>4.检查效果</h3><p>关闭DOSBox并重新打开，可以看到刚才配置的命令已经自动执行了。<br><img src="https://img-blog.csdnimg.cn/20200303174059448.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>此时运行masm，出现如下内容，表示环境部署完成。</p>
+<p><img src="https://img-blog.csdnimg.cn/20200303174110648.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h3 id="5-补充"><a href="#5-补充" class="headerlink" title="5.补充"></a>5.补充</h3><p>(注：我们的之后的所有操作虽然都在软件窗口中进行，但脚本窗是不能关闭的，当它是个背景就好)</p>
+<h5 id="5-1关于支持命令与快捷键"><a href="#5-1关于支持命令与快捷键" class="headerlink" title="5.1关于支持命令与快捷键"></a>5.1关于支持命令与快捷键</h5><p>DOSBox并非DOS，只集成了DOS中非常有限的命令中非常有限的功能，读者可根据自身需求去下载相应的exe工具并放置在配置了环境变量的目录中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">help all					查看DOSBox自身集成的命令工具</span><br><span class="line">exit						退出程序</span><br><span class="line"></span><br><span class="line">Alt+Enter 					全屏&#x2F;窗口 切换 （常用）</span><br><span class="line"></span><br><span class="line">Ctrl+F7 			        降低跳桢数</span><br><span class="line"></span><br><span class="line">Ctrl+F8 					提高跳桢数</span><br><span class="line"></span><br><span class="line">Ctrl+F9 					强制退出DOSBOX</span><br><span class="line"></span><br><span class="line">Ctrl+F10 				 	显示&#x2F;隐藏 系统鼠标</span><br><span class="line"></span><br><span class="line">Ctrl+F11				  	降低“DOS模拟CPU”速度（常用）</span><br><span class="line"></span><br><span class="line">Ctrl+F12 					提高“DOS模拟CPU”速度（常用）</span><br></pre></td></tr></table></figure>
+
+<h5 id="5-2关于全屏闪退问题"><a href="#5-2关于全屏闪退问题" class="headerlink" title="5.2关于全屏闪退问题"></a>5.2关于全屏闪退问题</h5><p>部分Win10用户在使用DOSBox时，存在全屏闪退问题，笔者遇到的情况是通过以下方式解决的:</p>
+<p>用记事本打开DOSBox配置文件(方法见第三步)</p>
+<p>Ctrl+F 查找到” output “ 字段，如下图:</p>
+<p><img src="https://img-blog.csdnimg.cn/20200303174129736.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>可以看到默认值是”surface” ，现在我们需要将该值改为” opengl “，如下图:</p>
+<p><img src="https://img-blog.csdnimg.cn/20200303174155303.png" alt="在这里插入图片描述"><br>保存退出，重启DOSBox，大功告成。<br>（如果该方法不成功，还可以在oengl模式下，修改配置文件中windowresolution=1920x1080  比例可以自己定，用来设定窗口的初始大小）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/" data-id="ck7dbzwrr0001sknr0irogrtl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">在Centos8上部署Django环境(Nginx+mysql+uwsgi)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">基于DosBox的Inter汇编虚拟环境部署</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">在Centos8上部署Django环境(Nginx+mysql+uwsgi)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/04/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
