@@ -43,7 +43,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>云海拾贝</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>云海仙泽</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -107,7 +107,7 @@
 </nav>
 
     <div class="view intro-2" id="background" parallax=true
-         style="background: url('/img/default.png')no-repeat center center;
+         style="background: url('/img/bg2.jpg')no-repeat center center;
            background-size: cover;">
       <div class="full-bg-img">
         <div class="mask rgba-black-light flex-center">
@@ -143,28 +143,21 @@
   <div class="row mx-auto index-card">
     
     
-    <div class="col-12 col-md-8 mx-auto index-info">
-      <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">
-        <p class="h4 index-header">基于DosBox的Inter汇编虚拟环境部署</p>
+     <div class="col-12 col-md-12 mx-auto index-info">
+	 <a href="/2020/03/04/Centos7.3%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Apache2.4+Mysql+wsgi+PHP)/">
+        <p class="h4 index-header">Centos7.3部署Django环境(Apache2.4+Mysql+wsgi+PHP)</p>
       </a>
-
-      <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">
+      <a href="/2020/03/04/Centos7.3%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Apache2.4+Mysql+wsgi+PHP)/">
         
         
           
         
         <div class="index-excerpt" >
-          <div class="index-text mb-1">包含DosBox安装包和一组MASM+LINK+EDIT+DEBUG配套工具的包可在上方链接下载。软件配置环境:Win10  Win7_64  Win7_32   (笔者以下内容 基于Win10主流机,Win7同理)
-1.创建工程目录在电脑上创建一个文件夹用来充当我们存放工具、代码的工程目录。笔者创建的是(E:\lb)，我们将MASM文件夹放在该目录下，如图:
-2.安装DOSBox双击压缩包中的DOSBox0.74-win32-installer.exe 以安装DOSBox(这是一款自带DOS的X86仿真器)安装过程中选择好安装目录然后一路Next即可，安装成功后桌面上会出现DosBox的快捷方式。
-3.自动挂载工作空间双击打开快捷方式以后会出现两个窗口(脚本控制窗与软件窗)，如下图红圈中内容，是本机当前用户DosBox的配置文件的路径。
-
- 选中该路径后，Ctrl+C复制到资源管理器中，回车(选择记事本)打开配置文件。拉至最底部，在“autoexec”配置字段下加入如下图三条命令并保存退出。  
-
-#[autoexec]字段下加入的命令会在DOSBox开启后自动执行，免去了每次开启都</div>
+          <div class="index-text mb-1">以下博文记录为2018年 部分内容或老旧 仅供参考接下来是笔者根据自己经历整理的从零开始在CentOs7.3上搭建环境（实测在腾讯云  阿里云主机上无误）我们所采用的是如下配置：
+Apache2.4 + MySQL5.7+PHP7.1+phpMyAdmin4.8+python3.6(pip3) +MOD_WSGI4.5+Django2.xApache1.安装apache2.4及其扩增包yum install httpd httpd-dev
+2.配置servernamevi /etc/httpd/conf/httpd.conf修改这行: ServerName localhost:80    //</div>
         </div>
       </a>
-
       <div class="index-btm">
         
           <i class="iconfont icon-riqi2"></i>&nbsp;2020-03-04&nbsp;&nbsp;
@@ -178,29 +171,23 @@
   <div class="row mx-auto index-card">
     
     
-    <div class="col-12 col-md-8 mx-auto index-info">
-      <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">
-        <p class="h4 index-header">在Centos8上部署Django环境(Nginx+mysql+uwsgi)</p>
+     <div class="col-12 col-md-12 mx-auto index-info">
+	 <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">
+        <p class="h4 index-header">基于DosBox的Inter汇编虚拟环境部署</p>
       </a>
-
-      <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">
+      <a href="/2020/03/04/%E5%9F%BA%E4%BA%8EDosBox%E7%9A%84Inter%E6%B1%87%E7%BC%96%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2/">
         
         
           
         
         <div class="index-excerpt" >
           <div class="index-text mb-1">
-前言:笔者通过阿里云的学生”在家实践计划“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇参考博文。如有疑问欢迎大家在评区留言。附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。
+包含DosBox安装包和一组MASM+LINK+EDIT+DEBUG配套工具的包可在此处下载。软件配置环境:Win10  Win7_64  Win7_32   (笔者以下内容 基于Win10主流机,Win7同理)
 
-1.Nginx1.1阿里云放通80端口在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考官方说明。
-1.2安装nginx由于笔者对nginx的版本没有过多要求，此处采用dnf包管理方式安装，此处笔者dnf安装的是14.1版本。
-dnf install -y nginx
-安装完成后，可以查看一下版本，以验证是否正确安装。
-nginx -v
-1.3nginx管理基于dnf安装的nginx已经做好了相关设置，可以使用nginx -s、systemctl对nginx进行便捷管理。systemctl管理</div>
+1.创建工程目录在电脑上创建一个文件夹用来充当我们存放工具、代码的工程目录。笔者创建的是(E:\lb)，我们将MASM文件夹放在该目录下，如图:
+2.安装DOSBox双击压缩包中的DOSBox0.74-win32-installer.exe 以安装DOSBox(这是一款自带DOS的X86仿真器)安装过程中选择好安装目录然后一路Next即可，安装成功后桌面上会出现DosBox的快捷</div>
         </div>
       </a>
-
       <div class="index-btm">
         
           <i class="iconfont icon-riqi2"></i>&nbsp;2020-03-04&nbsp;&nbsp;
@@ -211,6 +198,34 @@ nginx -v
     </div>
   </div>
 
+  <div class="row mx-auto index-card">
+    
+    
+     <div class="col-12 col-md-12 mx-auto index-info">
+	 <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">
+        <p class="h4 index-header">在Centos8上部署Django环境(Nginx+mysql+uwsgi)</p>
+      </a>
+      <a href="/2020/03/04/%E5%9C%A8Centos8%E4%B8%8A%E9%83%A8%E7%BD%B2Django%E7%8E%AF%E5%A2%83(Nginx+mysql+uwsgi)/">
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">
+前言:笔者通过阿里云的学生”在家实践计划“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇参考博文。如有疑问欢迎大家在评区留言。附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。
+
+1.Nginx1.1阿里云放通80端口在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考官方说明。</div>
+        </div>
+      </a>
+      <div class="index-btm">
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2020-03-04&nbsp;&nbsp;
+        
+        
+        
+      </div>
+    </div>
+  </div>
 
 
 
@@ -397,6 +412,56 @@ nginx -v
 
 
 
+
+  
+  
+    <script type="text/javascript">
+      //定义获取词语下标
+      var a_idx = 0;
+      jQuery(document).ready(function ($) {
+        //点击body时触发事件
+        $("body").click(function (e) {
+          //需要显示的词语
+          var a = new Array("富强", "民主", "文明", "和谐", "自由", "平等", "公正", "法治", "爱国", "敬业", "诚信", "友善");
+          //设置词语给span标签
+          var $i = $("<span/>").text(a[a_idx]);
+          //下标等于原来下标+1  余 词语总数
+          a_idx = (a_idx + 1) % a.length;
+          //获取鼠标指针的位置，分别相对于文档的左和右边缘。
+          //获取x和y的指针坐标
+          var x = e.pageX, y = e.pageY;
+          //在鼠标的指针的位置给$i定义的span标签添加css样式
+          $i.css({
+            "z-index": 999,
+            "top": y - 20,
+            "left": x,
+            "position": "absolute",
+            "font-weight": "bold",
+            "color": rand_color()
+          });
+          // 随机颜色
+          function rand_color() {
+            return "rgb(" + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + ")"
+          }
+          //在body添加这个标签
+          $("body").append($i);
+          //animate() 方法执行 CSS 属性集的自定义动画。
+          //该方法通过CSS样式将元素从一个状态改变为另一个状态。CSS属性值是逐渐改变的，这样就可以创建动画效果。
+          //详情请看http://www.w3school.com.cn/jquery/effect_animate.asp
+          $i.animate({
+            //将原来的位置向上移动180
+            "top": y - 180,
+            "opacity": 0
+            //1500动画的速度
+          }, 1500, function () {
+            //时间到了自动删除
+            $i.remove();
+          });
+        });
+      })
+      ;
+    </script>
+  
 
 
 
