@@ -42,7 +42,7 @@
 
 
 <body>
-  <header style="height: 80vh;">
+  <header style="height: 100vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -122,6 +122,10 @@
             
           </div>
 
+          
+            <div class="scroll-down-bar">
+              <i class="fas fa-angle-down scroll-down-arrow"></i>
+            </div>
           
         </div>
       </div>
@@ -297,7 +301,9 @@
   <script>
     anchors.options = {
       placement: "right",
-      visible: "false",
+      visible: "always",
+      
+      icon: "❡"
       
     };
     var el = "h1,h2,h3,h4,h5,h6".split(",");

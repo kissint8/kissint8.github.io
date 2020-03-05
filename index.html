@@ -222,12 +222,12 @@ source /opt/startYACY.shSuccess as this:Try it!
         
         <div class="index-excerpt" >
           <div class="index-text mb-1">
-继NCL更新到6.6以后,官网给出了很方便的conda安装，详见官网教程在这里，笔者整理了一下自己的安装思路。根据官网的推荐，我们选择了minconda而不是conda（小巧够用）
+继NCL更新到6.6以后,官网给出了很方便的conda安装，详见官网教程在这里，笔者整理了一下自己的安装思路。根据官网的推荐，我们选择了minconda而不是Anaconda（小巧够用）
 
 1.安装Minconda1.1下载脚本从中科大的源站下载minconda安装脚本，并执行。
 wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh
 chmod +x Miniconda3-4.5.11-Linux-x86_64.sh
-./Miniconda3-4.5.11-Lin</div>
+./Miniconda3-4.5.11-</div>
         </div>
       </a>
       <div class="index-btm">
@@ -923,7 +923,9 @@ git config --global credential.helper &#39;cach</div>
   <script>
     anchors.options = {
       placement: "right",
-      visible: "false",
+      visible: "always",
+      
+      icon: "❡"
       
     };
     var el = "h1,h2,h3,h4,h5,h6".split(",");
