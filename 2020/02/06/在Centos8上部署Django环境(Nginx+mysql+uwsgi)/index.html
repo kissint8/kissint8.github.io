@@ -1,257 +1,28 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-
-
-
-
-<head>
-<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css"/>
-<script src="/live2d/autoload.js"></script>
-  <meta charset="UTF-8">
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
-  <link rel="icon" type="image/png" href="/img/favicon.png">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  
-  <meta name="description" content="">
-  <meta name="author" content="John Doe">
-  <meta name="keywords" content="">
-  <title>在Centos8上部署Django环境(Nginx+mysql+uwsgi) ~ 云海仙泽</title>
-
-  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
-<link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
-<link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css"  >
-<link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css"  >
-
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
-
-
-
-  <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css"  >
-
-<link rel="stylesheet" href="/css/main.css"  >
-
-
-  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox.min.css"  >
-
-
-<meta name="generator" content="Hexo 4.2.0"></head>
-
-
-<body>
-  <header style="height: 100vh;">
-    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
-  <div class="container">
-    <a class="navbar-brand"
-       href="/">&nbsp;<strong>云海仙泽</strong>&nbsp;</a>
-
-    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <div class="animated-icon"><span></span><span></span><span></span></div>
-    </button>
-
-    <!-- Collapsible content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto text-center">
-        
-          
-          
-          
-          
-          <li class="nav-item">
-            <a class="nav-link" href="/">首页</a>
-          </li>
-        
-          
-          
-          
-          
-          <li class="nav-item">
-            <a class="nav-link" href="/archives/">归档</a>
-          </li>
-        
-          
-          
-          
-          
-          <li class="nav-item">
-            <a class="nav-link" href="/categories/">分类</a>
-          </li>
-        
-          
-          
-          
-          
-          <li class="nav-item">
-            <a class="nav-link" href="/tags/">标签</a>
-          </li>
-        
-          
-          
-          
-          
-          <li class="nav-item">
-            <a class="nav-link" href="/about/">关于</a>
-          </li>
-        
-        
-          <li class="nav-item" id="search-btn">
-            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
-                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-    <div class="view intro-2" id="background" false
-         style="background: url('/img/back.png')no-repeat center center;
-           background-size: cover;">
-      <div class="full-bg-img">
-        <div class="mask rgba-black-light flex-center">
-          <div class="container text-center white-text fadeInUp">
-            <span class="h2" id="subtitle">
-              
-            </span>
-
-            
-              <br>
-              
-                <p class="mt-3">
-                  <i class="fas fa-calendar-alt" aria-hidden="true"></i>&nbsp;
-                  星期四, 二月 6日 2020, 6:45 晚上
-                </p>
-              
-
-              <p>
-                
-                  
-                  &nbsp;<i class="far fa-chart-bar"></i>
-                  <span class="post-count">
-                    2.8k 字
-                  </span>&nbsp;
-                
-
-                
-                  
-                  &nbsp;<i class="far fa-clock"></i>
-                  <span class="post-count">
-                      11 分钟
-                  </span>&nbsp;
-                
-
-                
-                  <!-- 不蒜子统计文章PV -->
-                  
-                  &nbsp;<i class="far fa-eye" aria-hidden="true"></i>&nbsp;
-                  <span id="busuanzi_container_page_pv">
-                    <span id="busuanzi_value_page_pv"></span> 次
-                  </span>&nbsp;
-                
-              </p>
-            
-          </div>
-
-          
-            <div class="scroll-down-bar">
-              <i class="fas fa-angle-down scroll-down-arrow"></i>
-            </div>
-          
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    
-      
-
-<div class="container-fluid">
-  <div class="row">
-    <div class="d-none d-lg-block col-lg-2"></div>
-    <div class="col-lg-8 nopadding-md">
-      <div class="py-5 z-depth-3" id="board">
-        <div class="post-content mx-auto" id="post">
-          <div class="markdown-body">
-            <blockquote>
-<p>前言:笔者通过阿里云的学生”<a href="https://developer.aliyun.com/adc/student/#ecscolleges-collocation-stu" target="_blank" rel="noopener">在家实践计划</a>“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇<a href="https://blog.csdn.net/qq_43232506/article/details/102816659" target="_blank" rel="noopener">参考博文</a>。如有疑问欢迎大家在评区留言。<br>附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。</p>
-</blockquote>
-<h2 id="1-Nginx"><a href="#1-Nginx" class="headerlink" title="1.Nginx"></a>1.Nginx</h2><h5 id="1-1阿里云放通80端口"><a href="#1-1阿里云放通80端口" class="headerlink" title="1.1阿里云放通80端口"></a>1.1阿里云放通80端口</h5><p>在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考<a href="https://help.aliyun.com/document_detail/25475.html?spm=5176.2020520101.121.1.57bb4df5DMKEqy" target="_blank" rel="noopener">官方说明</a>。</p>
-<h5 id="1-2安装nginx"><a href="#1-2安装nginx" class="headerlink" title="1.2安装nginx"></a>1.2安装nginx</h5><p>由于笔者对nginx的版本没有过多要求，此处采用dnf包管理方式安装，此处笔者dnf安装的是14.1版本。</p>
-<pre><code class="shell">dnf install -y nginx</code></pre>
-<p>安装完成后，可以查看一下版本，以验证是否正确安装。</p>
-<pre><code class="shell">nginx -v</code></pre>
-<h5 id="1-3nginx管理"><a href="#1-3nginx管理" class="headerlink" title="1.3nginx管理"></a>1.3nginx管理</h5><p>基于dnf安装的nginx已经做好了相关设置，可以使用nginx -s、systemctl对nginx进行便捷管理。<br>systemctl管理常用:</p>
-<pre><code class="shell">systemctl enable nginx #开机自启动nginx
+<!DOCTYPE html><html lang="zh-CN"><head><script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css"><script src="/live2d/autoload.js"></script><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png"><link rel="icon" type="image/png" href="/img/favicon.png"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="description" content=""><meta name="author" content="John Doe"><meta name="keywords" content=""><title>在Centos8上部署Django环境(Nginx+mysql+uwsgi) ~ 云海仙泽</title><link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"><link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css"><link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1067060_qzomjdt8bmp.css"><link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css"><link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/fancybox/jquery.fancybox.min.css"><meta name="generator" content="Hexo 4.2.0"></head><body><header style="height:100vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"><a class="navbar-brand" href="/">&nbsp;<strong>云海仙泽</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/">首页</a></li><li class="nav-item"><a class="nav-link" href="/archives/">归档</a></li><li class="nav-item"><a class="nav-link" href="/categories/">分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/">标签</a></li><li class="nav-item"><a class="nav-link" href="/about/">关于</a></li><li class="nav-item" id="search-btn"><a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i class="iconfont icon-search"></i>&nbsp;&nbsp;</a></li></ul></div></div></nav><div class="view intro-2" id="background" false style="background:url(/img/back.png) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask rgba-black-light flex-center"><div class="container text-center white-text fadeInUp"><span class="h2" id="subtitle"></span><br><p class="mt-3"><i class="fas fa-calendar-alt" aria-hidden="true"></i>&nbsp; 星期四, 二月 6日 2020, 6:45 晚上</p><p>&nbsp;<i class="far fa-chart-bar"></i> <span class="post-count">2.8k 字 </span>&nbsp; &nbsp;<i class="far fa-clock"></i> <span class="post-count">11 分钟 </span>&nbsp; &nbsp;<i class="far fa-eye" aria-hidden="true"></i>&nbsp; <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span> 次 </span>&nbsp;</p></div><div class="scroll-down-bar"><i class="fas fa-angle-down scroll-down-arrow"></i></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="py-5 z-depth-3" id="board"><div class="post-content mx-auto" id="post"><div class="markdown-body"><blockquote><p>前言:笔者通过阿里云的学生”<a href="https://developer.aliyun.com/adc/student/#ecscolleges-collocation-stu" target="_blank" rel="noopener">在家实践计划</a>“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了 Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇<a href="https://blog.csdn.net/qq_43232506/article/details/102816659" target="_blank" rel="noopener">参考博文</a>。如有疑问欢迎大家在评区留言。<br>附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。</p></blockquote><h2 id="1-Nginx"><a href="#1-Nginx" class="headerlink" title="1.Nginx"></a>1.Nginx</h2><h5 id="1-1阿里云放通80端口"><a href="#1-1阿里云放通80端口" class="headerlink" title="1.1阿里云放通80端口"></a>1.1阿里云放通80端口</h5><p>在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考<a href="https://help.aliyun.com/document_detail/25475.html?spm=5176.2020520101.121.1.57bb4df5DMKEqy" target="_blank" rel="noopener">官方说明</a>。</p><h5 id="1-2安装nginx"><a href="#1-2安装nginx" class="headerlink" title="1.2安装nginx"></a>1.2安装nginx</h5><p>由于笔者对nginx的版本没有过多要求，此处采用dnf包管理方式安装，此处笔者dnf安装的是14.1版本。</p><pre><code class="shell">dnf install -y nginx</code></pre><p>安装完成后，可以查看一下版本，以验证是否正确安装。</p><pre><code class="shell">nginx -v</code></pre><h5 id="1-3nginx管理"><a href="#1-3nginx管理" class="headerlink" title="1.3nginx管理"></a>1.3nginx管理</h5><p>基于dnf安装的nginx已经做好了相关设置，可以使用nginx -s、systemctl对nginx进行便捷管理。<br>systemctl管理常用:</p><pre><code class="shell">systemctl enable nginx #开机自启动nginx
 systemctl disable nginx #开机禁止启动nginx
 systemctl status nginx #查看nginx服务状态
 systemctl start nginx #开启nginx服务
 systemctl stop nginx #终止nginx服务
-systemctl restart nginx #重启nginx服务 </code></pre>
-<p>相比之下，笔者还是更喜欢直接使用原生的nginx自带命令<br>通过nginx -h 读者可以查看到nginx常用命令及说明，笔者摘录了一部分</p>
-<pre><code class="shell">nginx -V             #查看nginx版本和配置项内容
+systemctl restart nginx #重启nginx服务 </code></pre><p>相比之下，笔者还是更喜欢直接使用原生的nginx自带命令<br>通过nginx -h 读者可以查看到nginx常用命令及说明，笔者摘录了一部分</p><pre><code class="shell">nginx -V             #查看nginx版本和配置项内容
 nginx -t              #检查配置文件是否正确
 nginx -c  配置文件路径 #选用某一配置文件
 nginx                  #启动nginx
 nginx -s reload      #重新载入配置文件
-nginx -s stop         #停止nginx</code></pre>
-<h5 id="1-4nginx使用"><a href="#1-4nginx使用" class="headerlink" title="1.4nginx使用"></a>1.4nginx使用</h5><pre><code class="shell">systemctl start nginx #或者直接使用nginx 启动nginx服务
+nginx -s stop         #停止nginx</code></pre><h5 id="1-4nginx使用"><a href="#1-4nginx使用" class="headerlink" title="1.4nginx使用"></a>1.4nginx使用</h5><pre><code class="shell">systemctl start nginx #或者直接使用nginx 启动nginx服务
 systemctl status nginx #若看到Active变为active(running)则启动正常
-lsof -i:80            #可以看到80端口已经被nginx监听了</code></pre>
-<p>上面一系列检查确认nginx正常启动后，可以到浏览器输入公网地址或域名，看到nginx欢迎页。<br>nginx默认配置中监听80端口的配置项所在根位置，对应nginx程序安装目录下的html目录。我们通过<code>nginx -V</code>可以看到，dnf安装后，nginx安装位置在/usr/share/nginx,配置文件在/etc/nginx/nginx.conf。(欢迎页就是/usr/share/nginx/html/index.html)。<br>笔者还是更习惯将网站目录设置在/var/www下，我们可以这样来修改:</p>
-<pre><code class="shell">mkdir -p /var/www/mysite                      #创建网站目录
+lsof -i:80            #可以看到80端口已经被nginx监听了</code></pre><p>上面一系列检查确认nginx正常启动后，可以到浏览器输入公网地址或域名，看到nginx欢迎页。<br>nginx默认配置中监听80端口的配置项所在根位置，对应nginx程序安装目录下的html目录。我们通过<code>nginx -V</code>可以看到，dnf安装后，nginx安装位置在/usr/share/nginx,配置文件在/etc/nginx/nginx.conf。(欢迎页就是/usr/share/nginx/html/index.html)。<br>笔者还是更习惯将网站目录设置在/var/www下，我们可以这样来修改:</p><pre><code class="shell">mkdir -p /var/www/mysite                      #创建网站目录
 cp /usr/share/nginx/html/* /var/www/mysite/   #笔者暂时没网站,先用默认
 cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak #备份配置文件
 vim /etc/nginx/nginx.conf                        #打开配置文件 按i编辑
 ##找到其中http-&gt;listen80的server项-&gt;修改root为/var/www/mysite;
 ##按ESC后输入:wq 保存退出
 nginx -t                        #测试配置文件是否修改正确
-nginx -s relod                     #无误后重新载入配置文件</code></pre>
-<p>大功告成，网站目录修改成功。(准确说是80端口web内容映射的根目录位置)</p>
-<h2 id="2-Mysql"><a href="#2-Mysql" class="headerlink" title="2.Mysql"></a>2.Mysql</h2><h5 id="2-1安装mysql8-0"><a href="#2-1安装mysql8-0" class="headerlink" title="2.1安装mysql8.0"></a>2.1安装mysql8.0</h5><p>Centos8的dnf对懒人那是相当友好。mysql8.0的完全可以一条命令解决:</p>
-<pre><code class="shell">dnf install -y @mysql  #@mysql模块将安装MySQL8.0及其所有依赖项</code></pre>
-<h5 id="2-2启动mysql"><a href="#2-2启动mysql" class="headerlink" title="2.2启动mysql"></a>2.2启动mysql</h5><pre><code class="shell">systemctl enable mysqld   #配置mysql开机自启动
+nginx -s relod                     #无误后重新载入配置文件</code></pre><p>大功告成，网站目录修改成功。(准确说是80端口web内容映射的根目录位置)</p><h2 id="2-Mysql"><a href="#2-Mysql" class="headerlink" title="2.Mysql"></a>2.Mysql</h2><h5 id="2-1安装mysql8-0"><a href="#2-1安装mysql8-0" class="headerlink" title="2.1安装mysql8.0"></a>2.1安装mysql8.0</h5><p>Centos8的dnf对懒人那是相当友好。mysql8.0的完全可以一条命令解决:</p><pre><code class="shell">dnf install -y @mysql  #@mysql模块将安装MySQL8.0及其所有依赖项</code></pre><h5 id="2-2启动mysql"><a href="#2-2启动mysql" class="headerlink" title="2.2启动mysql"></a>2.2启动mysql</h5><pre><code class="shell">systemctl enable mysqld   #配置mysql开机自启动
 systemctl start mysqld       #启动mysqld
-systemctl status mysqld   #查看mysql是否启动成功(active running)</code></pre>
-<h5 id="2-3安全设置"><a href="#2-3安全设置" class="headerlink" title="2.3安全设置"></a>2.3安全设置</h5><p>运行如下脚本，可以设置mysql的root密码，并引导你完成一些必要的安全设置。</p>
-<pre><code class="shell">mysql_secure_installation</code></pre>
-<p>首先，脚本会让你选择是否配置VALIDATE PASSWORD PLUGIN(密码验证插件)，该插件用来检查mysql用户所设置的密码强度，只有达到一定强度的密码才允许被设置。如果你希望设置请输入y或者Y回车，不想请直接回车。若选择了配置，紧接着你将选择所采用密码验证策略的级别：</p>
-<blockquote>
-<p>低:密码长度不少于8位<br>中:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合。<br>强:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合，需配合字典文件。</p>
-</blockquote>
-<p>通常，我们选择中级别即可。</p>
-<p>其次，将要求用户输入两次为root设置的新密码，上一步骤设置的密码验证策略将发挥作用，并对用户设置的密码强度进行打分。设置好密码以后，会提示用户是否继续采用密码保护，选择y回车。</p>
-<p>紧接着，将询问用户是否删除匿名用户，选择y回车。</p>
-<blockquote>
-<p>默认情况下，MySQL有一个匿名用户，允许任何人登录MySQL，而不必创建用户帐户。这仅用于测试，或者安装时更便利。但在部署生产环境之前，应该先删除匿名用户。</p>
-</blockquote>
-<p>然后，将询问用户是否禁止以root身份远程登陆mysql，选择y回车。</p>
-<blockquote>
-<p>通常，mysql中的root用户应只允许通过本地登陆，而不能远程登陆。这样可以降低root用户密码被爆破的风险。</p>
-</blockquote>
-<p>此后，将询问用户是否删除测试数据库，选择y回车。</p>
-<blockquote>
-<p>默认情况下，MySQL总有一个名为’test’的数据库，允许任何用户访问。这仅用于安装时的测试，但在部署生产环境之前，应该先删除该数据库。</p>
-</blockquote>
-<p>最后，脚本询问用户是否现在重载 privilege tables，以使当前所有修改立刻生效。选择y回车。</p>
-<p>当我们在终端中键入:</p>
-<pre><code class="shell">mysql -uroot -p             #回车输入密码并确认</code></pre>
-<p>即可登陆mysql。</p>
-<h2 id="3-Django"><a href="#3-Django" class="headerlink" title="3.Django"></a>3.Django</h2><p>Django作为python得力的重量级web框架，一直备受青睐。</p>
-<h5 id="3-1安装django"><a href="#3-1安装django" class="headerlink" title="3.1安装django"></a>3.1安装django</h5><pre><code class="shell">pip3 install django</code></pre>
-<h5 id="3-2关联mysql"><a href="#3-2关联mysql" class="headerlink" title="3.2关联mysql"></a>3.2关联mysql</h5><pre><code class="shell">dnf install mysql-devel
-pip3 install mysqlclient</code></pre>
-<h5 id="3-3Django项目"><a href="#3-3Django项目" class="headerlink" title="3.3Django项目"></a>3.3Django项目</h5><pre><code class="shell">django-admin startproject  myproject   #创建一个名为myproject的项目
+systemctl status mysqld   #查看mysql是否启动成功(active running)</code></pre><h5 id="2-3安全设置"><a href="#2-3安全设置" class="headerlink" title="2.3安全设置"></a>2.3安全设置</h5><p>运行如下脚本，可以设置mysql的root密码，并引导你完成一些必要的安全设置。</p><pre><code class="shell">mysql_secure_installation</code></pre><p>首先，脚本会让你选择是否配置VALIDATE PASSWORD PLUGIN(密码验证插件)，该插件用来检查mysql用户所设置的密码强度，只有达到一定强度的密码才允许被设置。如果你希望设置请输入y或者Y回车，不想请直接回车。若选择了配置，紧接着你将选择所采用密码验证策略的级别：</p><blockquote><p>低:密码长度不少于8位<br>中:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合。<br>强:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合，需配合字典文件。</p></blockquote><p>通常，我们选择中级别即可。</p><p>其次，将要求用户输入两次为root设置的新密码，上一步骤设置的密码验证策略将发挥作用，并对用户设置的密码强度进行打分。设置好密码以后，会提示用户是否继续采用密码保护，选择y回车。</p><p>紧接着，将询问用户是否删除匿名用户，选择y回车。</p><blockquote><p>默认情况下，MySQL有一个匿名用户，允许任何人登录MySQL，而不必创建用户帐户。这仅用于测试，或者安装时更便利。但在部署生产环境之前，应该先删除匿名用户。</p></blockquote><p>然后，将询问用户是否禁止以root身份远程登陆mysql，选择y回车。</p><blockquote><p>通常，mysql中的root用户应只允许通过本地登陆，而不能远程登陆。这样可以降低root用户密码被爆破的风险。</p></blockquote><p>此后，将询问用户是否删除测试数据库，选择y回车。</p><blockquote><p>默认情况下，MySQL总有一个名为’test’的数据库，允许任何用户访问。这仅用于安装时的测试，但在部署生产环境之前，应该先删除该数据库。</p></blockquote><p>最后，脚本询问用户是否现在重载 privilege tables，以使当前所有修改立刻生效。选择y回车。</p><p>当我们在终端中键入:</p><pre><code class="shell">mysql -uroot -p             #回车输入密码并确认</code></pre><p>即可登陆mysql。</p><h2 id="3-Django"><a href="#3-Django" class="headerlink" title="3.Django"></a>3.Django</h2><p>Django作为python得力的重量级web框架，一直备受青睐。</p><h5 id="3-1安装django"><a href="#3-1安装django" class="headerlink" title="3.1安装django"></a>3.1安装django</h5><pre><code class="shell">pip3 install django</code></pre><h5 id="3-2关联mysql"><a href="#3-2关联mysql" class="headerlink" title="3.2关联mysql"></a>3.2关联mysql</h5><pre><code class="shell">dnf install mysql-devel
+pip3 install mysqlclient</code></pre><h5 id="3-3Django项目"><a href="#3-3Django项目" class="headerlink" title="3.3Django项目"></a>3.3Django项目</h5><pre><code class="shell">django-admin startproject  myproject   #创建一个名为myproject的项目
 cd myproject
-python3 manage.py startapp dg_mypr  #创建一个应用dg_mypr用来映射数据库</code></pre>
-<p>上述创建的应用，通过在models.py中利用Django的ORM映射数据库的表和字段，一般为了统一我们会使该应用与数据库同名。</p>
-<p>打开项目下的配置文件settings.py</p>
-<pre><code class="python">
+python3 manage.py startapp dg_mypr  #创建一个应用dg_mypr用来映射数据库</code></pre><p>上述创建的应用，通过在models.py中利用Django的ORM映射数据库的表和字段，一般为了统一我们会使该应用与数据库同名。</p><p>打开项目下的配置文件settings.py</p><pre><code class="python">
 DATABASES = {
     &#39;default&#39;: {
         &#39;ENGINE&#39;: &#39;django.db.backends.sqlite3&#39;,
@@ -269,8 +40,7 @@ DATABASES = {
         &#39;PASSWORD&#39;: &#39;密码&#39;,
         &#39;HOST&#39;: &#39;localhost&#39;,
     }
-}</code></pre>
-<pre><code class="py">#在这里插入新创建的app
+}</code></pre><pre><code class="py">#在这里插入新创建的app
 INSTALLED_APPS = [
     &#39;django.contrib.admin&#39;,
     &#39;django.contrib.auth&#39;,
@@ -279,24 +49,13 @@ INSTALLED_APPS = [
     &#39;django.contrib.messages&#39;,
     &#39;django.contrib.staticfiles&#39;,
     &#39;dg_mypr&#39;,                        #加入dg_mypr
-]</code></pre>
-<pre><code class="py">DEBUG = True            #测试中打开Debug 生产环境请关闭
-ALLOWED_HOSTS = [u&#39;*&#39;]    #修改白名单为全通</code></pre>
-<p>修改完成后，保存退出。<br>(在dg_mypr中的models.py中定义ORM映射模型的步骤略)<br>改好配置文件并创建模型后，我们可以使用</p>
-<pre><code class="shell">python3 manage.py check           #确认正常连接数据库且语法正确(0 issues)
+]</code></pre><pre><code class="py">DEBUG = True            #测试中打开Debug 生产环境请关闭
+ALLOWED_HOSTS = [u&#39;*&#39;]    #修改白名单为全通</code></pre><p>修改完成后，保存退出。<br>(在dg_mypr中的models.py中定义ORM映射模型的步骤略)<br>改好配置文件并创建模型后，我们可以使用</p><pre><code class="shell">python3 manage.py check           #确认正常连接数据库且语法正确(0 issues)
 python3 manage.py makemigrations  #根据模型建立migration
-python3 manage.py migrate          #根据migration在数据库中建立对应的表</code></pre>
-<p>此后若需要应用新的ORM建模，可以在清库后，删除dg_mypr/migrations目录下的<strong>pycache</strong>和0001_initial.py，重复上述两步操作即可。<br>最后，我们可以在开着debug的情况下应用runserver跑一个端口测试一下:<br>(确保阿里云安全策略组已开放该端口)</p>
-<pre><code class="shell">python3 manage.py runserver 0.0.0.0:8080  #监听8080端口建立项目服务</code></pre>
-<p>当浏览器访问http://公网地址:端口 后，若载入了Django欢迎页，则进入下一步骤。</p>
-<h2 id="4-uWSGI"><a href="#4-uWSGI" class="headerlink" title="4.uWSGI"></a>4.uWSGI</h2><h5 id="4-1安装uwsgi"><a href="#4-1安装uwsgi" class="headerlink" title="4.1安装uwsgi"></a>4.1安装uwsgi</h5><pre><code class="shell">python3 -m pip install uwsgi
+python3 manage.py migrate          #根据migration在数据库中建立对应的表</code></pre><p>此后若需要应用新的ORM建模，可以在清库后，删除dg_mypr/migrations目录下的<strong>pycache</strong>和0001_initial.py，重复上述两步操作即可。<br>最后，我们可以在开着debug的情况下应用runserver跑一个端口测试一下:<br>(确保阿里云安全策略组已开放该端口)</p><pre><code class="shell">python3 manage.py runserver 0.0.0.0:8080  #监听8080端口建立项目服务</code></pre><p>当浏览器访问http://公网地址:端口 后，若载入了Django欢迎页，则进入下一步骤。</p><h2 id="4-uWSGI"><a href="#4-uWSGI" class="headerlink" title="4.uWSGI"></a>4.uWSGI</h2><h5 id="4-1安装uwsgi"><a href="#4-1安装uwsgi" class="headerlink" title="4.1安装uwsgi"></a>4.1安装uwsgi</h5><pre><code class="shell">python3 -m pip install uwsgi
 #安装完成后测试一下
-uwsgi --version</code></pre>
-<h5 id="4-2写项目配置文件"><a href="#4-2写项目配置文件" class="headerlink" title="4.2写项目配置文件"></a>4.2写项目配置文件</h5><p>在项目的目录 /var/www/mysite/myproject 下创建一个ini配置文件<br>并创建一个目录uwsgi用来存放运行相关文件 </p>
-<pre><code class="shell">touch myproject.ini
-mkdir uwsgi</code></pre>
-<p>在myproject.ini中写入:</p>
-<pre><code class="py"># myproject.ini 
+uwsgi --version</code></pre><h5 id="4-2写项目配置文件"><a href="#4-2写项目配置文件" class="headerlink" title="4.2写项目配置文件"></a>4.2写项目配置文件</h5><p>在项目的目录 /var/www/mysite/myproject 下创建一个ini配置文件<br>并创建一个目录uwsgi用来存放运行相关文件</p><pre><code class="shell">touch myproject.ini
+mkdir uwsgi</code></pre><p>在myproject.ini中写入:</p><pre><code class="py"># myproject.ini 
 [uwsgi]
 #内部转发端口 只要不被占用可随意找 需和nginx.conf里的转发口匹配
 socket = :8888    
@@ -313,9 +72,7 @@ stats           =%(chdir)/uwsgi/uwsgi.status
 #pid文件，通过该文件可以控制uwsgi的重启和停止
 pidfile         =%(chdir)/uwsgi/uwsgi.pid
 #日志文件，通过该文件查看uwsgi的日志
-daemonize       =%(chdir)/uwsgi/uwsgi.log</code></pre>
-<h5 id="4-3写nginx配置文件"><a href="#4-3写nginx配置文件" class="headerlink" title="4.3写nginx配置文件"></a>4.3写nginx配置文件</h5><p>在nginx配置文件nginx.conf中加入</p>
-<pre><code class="py">server {
+daemonize       =%(chdir)/uwsgi/uwsgi.log</code></pre><h5 id="4-3写nginx配置文件"><a href="#4-3写nginx配置文件" class="headerlink" title="4.3写nginx配置文件"></a>4.3写nginx配置文件</h5><p>在nginx配置文件nginx.conf中加入</p><pre><code class="py">server {
     listen 8080; #暴露给外部访问的端口 根据实际指定 确认阿里云策略组已放行
     server_name localhost;
       charset utf-8;
@@ -326,24 +83,14 @@ daemonize       =%(chdir)/uwsgi/uwsgi.log</code></pre>
     location /static/ {
         alias /var/www/mysite/myproject/static/; #项目静态路径设置
     }
-}</code></pre>
-<p>写完后运行 <code>nginx -t</code>检测一下是否有语法错误<br>然后运行<code>nginx -s reload</code>重新载入配置文件</p>
-<h5 id="4-4运行"><a href="#4-4运行" class="headerlink" title="4.4运行"></a>4.4运行</h5><p>回到项目目录 运行 <code>uwsgi --ini myproject.ini</code>即可<br>可运行<code>cat uwsgi/uwsgi.log</code>查看一下是否正常启动了uwsgi<br>当看到如下内容 说明正常启动了</p>
-<pre><code class="shell">*** uWSGI is running in multiple interpreter mode ***
+}</code></pre><p>写完后运行 <code>nginx -t</code>检测一下是否有语法错误<br>然后运行<code>nginx -s reload</code>重新载入配置文件</p><h5 id="4-4运行"><a href="#4-4运行" class="headerlink" title="4.4运行"></a>4.4运行</h5><p>回到项目目录 运行 <code>uwsgi --ini myproject.ini</code>即可<br>可运行<code>cat uwsgi/uwsgi.log</code>查看一下是否正常启动了uwsgi<br>当看到如下内容 说明正常启动了</p><pre><code class="shell">*** uWSGI is running in multiple interpreter mode ***
 spawned uWSGI master process (pid: 1405)
 spawned uWSGI worker 1 (pid: 1413, cores: 1)
 spawned uWSGI worker 2 (pid: 1414, cores: 1)
 spawned uWSGI worker 3 (pid: 1415, cores: 1)
-spawned uWSGI worker 4 (pid: 1416, cores: 1)</code></pre>
-<p>此时，运行<code>ps aux | grep uwsgi</code>可查看到正在运行的uwsgi实例</p>
-<h5 id="4-5管理"><a href="#4-5管理" class="headerlink" title="4.5管理"></a>4.5管理</h5><p>倘若不撰写管理脚本 需要重启uwsgi时总是需要</p>
-<pre><code class="shell">$ ps -ax | grep uwsgi
+spawned uWSGI worker 4 (pid: 1416, cores: 1)</code></pre><p>此时，运行<code>ps aux | grep uwsgi</code>可查看到正在运行的uwsgi实例</p><h5 id="4-5管理"><a href="#4-5管理" class="headerlink" title="4.5管理"></a>4.5管理</h5><p>倘若不撰写管理脚本 需要重启uwsgi时总是需要</p><pre><code class="shell">$ ps -ax | grep uwsgi
 $ kill -9 [pid]
-$ uwsgi --ini myproject.ini</code></pre>
-<p>但是如果你按照第二步创建了uwsgi目录及相关文件，你就可以优雅地管理uwsgi进程。</p>
-<h6 id="4-5-1安装uwsgitop"><a href="#4-5-1安装uwsgitop" class="headerlink" title="4.5.1安装uwsgitop"></a>4.5.1安装uwsgitop</h6><p>uwsgitop是一款界面类似top的工具，用以查看指定uwsgi的全部工作进程情况。</p>
-<pre><code class="shell"> pip3 install uwsgitop</code></pre>
-<h6 id="4-5-2管理相关命令"><a href="#4-5-2管理相关命令" class="headerlink" title="4.5.2管理相关命令"></a>4.5.2管理相关命令</h6><pre><code class="shell">#重启uwsgi(常常出错 还是执行stop以后start效率高)
+$ uwsgi --ini myproject.ini</code></pre><p>但是如果你按照第二步创建了uwsgi目录及相关文件，你就可以优雅地管理uwsgi进程。</p><h6 id="4-5-1安装uwsgitop"><a href="#4-5-1安装uwsgitop" class="headerlink" title="4.5.1安装uwsgitop"></a>4.5.1安装uwsgitop</h6><p>uwsgitop是一款界面类似top的工具，用以查看指定uwsgi的全部工作进程情况。</p><pre><code class="shell"> pip3 install uwsgitop</code></pre><h6 id="4-5-2管理相关命令"><a href="#4-5-2管理相关命令" class="headerlink" title="4.5.2管理相关命令"></a>4.5.2管理相关命令</h6><pre><code class="shell">#重启uwsgi(常常出错 还是执行stop以后start效率高)
 uwsgi --reload uwsgi/uwsgi.pid
 #终止uwsgi(原理是启动uwsgi进程时会把pid写入该文件)
 uwsgi --stop uwsgi/uwsgi.pid
@@ -352,213 +99,12 @@ uwsgitop uwsgi/uwsgi.status
 #追踪uwsgi日志及动态刷新当前访问记录
 tail -f uwsgi/uwsgi.log
 #启动uwsgi
-uwsgi --ini myproject.ini</code></pre>
-<p>如果不便记忆，可将上述命令写入sh脚本文件 快捷执行。</p>
-<pre><code class="shell">cd uwsgi
+uwsgi --ini myproject.ini</code></pre><p>如果不便记忆，可将上述命令写入sh脚本文件 快捷执行。</p><pre><code class="shell">cd uwsgi
 echo &quot;uwsgi --ini ../myproject.ini&quot; &gt;start.sh
 echo &quot;uwsgi --stop uwsgi.pid&quot; &gt;stop.sh
 echo &quot;uwsgitop uwsgi.status&quot; &gt;status.sh
 echo &quot;tail -f uwsgi.log&quot;&gt;log.sh
-chmod +x *.sh</code></pre>
-<p>可在浏览器访问项目地址,测试效果。</p>
-<p>综上，笔者整理了自己部署环境的全过程，希望能够对读者有所帮助。后续如有其他内容，将继续补丁修正。欢迎评论指正！</p>
-
-            <hr>
-          </div>
-          <br>
-          <div>
-            <p>
-            
-              <span>
-                <i class="iconfont icon-inbox"></i>
-                
-                  <a class="hover-with-bg" href="/categories/%E7%BB%8F%E9%AA%8C%E6%95%B4%E7%90%86">经验整理</a>
-                  &nbsp;
-                
-              </span>&nbsp;&nbsp;
-            
-            
-              <span>
-                <i class="iconfont icon-tag"></i>
-                
-                  <a class="hover-with-bg" href="/tags/CentOS8">CentOS8</a>
-                
-                  <a class="hover-with-bg" href="/tags/Django">Django</a>
-                
-                  <a class="hover-with-bg" href="/tags/Nginx">Nginx</a>
-                
-              </span>
-            
-            </p>
-            
-              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
-            
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="d-none d-lg-block col-lg-2 toc-container">
-      
-  <div id="toc">
-    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
-    <div id="tocbot"></div>
-  </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- custom -->
-
-
-<!-- Comments -->
-<div class="col-lg-7 mx-auto nopadding-md">
-  <div class="container comments mx-auto" id="comments">
-    
-  </div>
-</div>
-
-    
-  </main>
-
-  
-    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
-      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
-    </a>
-  
-
-  
-    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
-        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div class="md-form mb-5">
-          <input type="text" id="local-search-input" class="form-control validate">
-          <label data-error="x" data-success="v"
-                 for="local-search-input">关键词</label>
-        </div>
-        <div class="list-group" id="local-search-result"></div>
-      </div>
-    </div>
-  </div>
-</div>
-  
-
-  <footer class="mt-5">
-  <div class="text-center py-3">
-    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
-    <i class="iconfont icon-love"></i>
-    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
-    <br>
-
-    
-  
-    <!-- 不蒜子统计PV -->
-    
-    &nbsp;<span id="busuanzi_container_site_pv"></span>总访问量 
-          <span id="busuanzi_value_site_pv"></span> 次&nbsp;
-  
-  
-    <!-- 不蒜子统计UV -->
-    
-    &nbsp;<span id="busuanzi_container_site_uv"></span>总访客数 
-            <span id="busuanzi_value_site_uv"></span> 人&nbsp;
-  
-  <br>
-
-
-
-    
-
-
-    <!-- cnzz Analytics icon -->
-    
-
-  </div>
-</footer>
-
-<!-- SCRIPTS -->
-<script src="/lib/jquery/jquery.min.js" ></script>
-<script src="/lib/popper/popper.min.js" ></script>
-<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
-<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
-<script src="/js/main.js" ></script>
-
-
-  <script src="/js/lazyload.js" ></script>
-
-
-
-  
-    <script src="/lib/tocbot/tocbot.min.js" ></script>
-  
-  <script src="/js/post.js" ></script>
-
-
-
-  <script src="/lib/smoothscroll/SmoothScroll.min.js" ></script>
-
-
-
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
-
-
-<!-- Plugins -->
-
-
-  
-
-  
-
-  
-
-  
-
-  <!-- cnzz Analytics -->
-  
-
-
-
-  <script src="/lib/prettify/prettify.min.js" ></script>
-  <script>
-    $(document).ready(function () {
-      $('pre').addClass('prettyprint  linenums');
-      prettyPrint();
-    })
-  </script>
-
-
-
-  <script src="/lib/typed/typed.min.js" ></script>
-  <script>
-    var typed = new Typed('#subtitle', {
-      strings: [
-        '  ',
-        "在Centos8上部署Django环境(Nginx+mysql+uwsgi)&nbsp;",
-      ],
-      cursorChar: "_",
-      typeSpeed: 70,
-      loop: false,
-    });
-    typed.stop();
-    $(document).ready(function () {
-      $(".typed-cursor").addClass("h2");
-      typed.start();
-    });
-  </script>
-
-
-
-  <script src="/lib/anchor/anchor.min.js" ></script>
-  <script>
-    anchors.options = {
+chmod +x *.sh</code></pre><p>可在浏览器访问项目地址,测试效果。</p><p>综上，笔者整理了自己部署环境的全过程，希望能够对读者有所帮助。后续如有其他内容，将继续补丁修正。欢迎评论指正！</p><hr></div><br><div><p><span><i class="iconfont icon-inbox"></i> <a class="hover-with-bg" href="/categories/%E7%BB%8F%E9%AA%8C%E6%95%B4%E7%90%86">经验整理</a> &nbsp; </span>&nbsp;&nbsp; <span><i class="iconfont icon-tag"></i> <a class="hover-with-bg" href="/tags/CentOS8">CentOS8</a> <a class="hover-with-bg" href="/tags/Django">Django</a> <a class="hover-with-bg" href="/tags/Nginx">Nginx</a></span></p><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p></div></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container"><div id="toc"><p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div><div class="col-lg-7 mx-auto nopadding-md"><div class="container comments mx-auto" id="comments"></div></div></main><a class="z-depth-1" id="scroll-top-button" href="#" role="button"><i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4><button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"><input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><b>Fluid</b></a><br>&nbsp;<span id="busuanzi_container_site_pv"></span>总访问量 <span id="busuanzi_value_site_pv"></span> 次&nbsp; &nbsp;<span id="busuanzi_container_site_uv"></span>总访客数 <span id="busuanzi_value_site_uv"></span> 人&nbsp;<br></div></footer><script src="/lib/jquery/jquery.min.js"></script><script src="/lib/popper/popper.min.js"></script><script src="/lib/bootstrap/js/bootstrap.min.js"></script><script src="/lib/mdbootstrap/js/mdb.min.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script src="/lib/tocbot/tocbot.min.js"></script><script src="/js/post.js"></script><script src="/lib/smoothscroll/SmoothScroll.min.js"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="/lib/prettify/prettify.min.js"></script><script>$(document).ready(function(){$("pre").addClass("prettyprint  linenums"),prettyPrint()})</script><script src="/lib/typed/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","在Centos8上部署Django环境(Nginx+mysql+uwsgi)&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="/lib/anchor/anchor.min.js"></script><script>anchors.options = {
       placement: "right",
       visible: "always",
       
@@ -570,95 +116,4 @@ chmod +x *.sh</code></pre>
     for (item of el) {
       res.push(".markdown-body > " + item)
     }
-    anchors.add(res.join(", "))
-  </script>
-
-
-
-  <script src="/js/local-search.js" ></script>
-  <script>
-    var path = "/local-search.xml";
-    var inputArea = document.querySelector("#local-search-input");
-    inputArea.onclick = function () {
-      getSearchFile(path);
-      this.onclick = null
-    }
-  </script>
-
-
-
-  <script src="/lib/fancybox/jquery.fancybox.min.js" ></script>
-  <script>
-    $("#post img:not(.no-zoom img, img[no-zoom])").each(
-      function () {
-        var element = document.createElement("a");
-        $(element).attr("data-fancybox", "images");
-        $(element).attr("href", $(this).attr("src"));
-        $(this).wrap(element);
-      }
-    );
-  </script>
-
-
-
-
-
-  
-  
-    <script type="text/javascript">
-      //定义获取词语下标
-      var a_idx = 0;
-      jQuery(document).ready(function ($) {
-        //点击body时触发事件
-        $("body").click(function (e) {
-          //需要显示的词语
-          var a = new Array("富强", "民主", "文明", "和谐", "自由", "平等", "公正", "法治", "爱国", "敬业", "诚信", "友善");
-          //设置词语给span标签
-          var $i = $("<span/>").text(a[a_idx]);
-          //下标等于原来下标+1  余 词语总数
-          a_idx = (a_idx + 1) % a.length;
-          //获取鼠标指针的位置，分别相对于文档的左和右边缘。
-          //获取x和y的指针坐标
-          var x = e.pageX, y = e.pageY;
-          //在鼠标的指针的位置给$i定义的span标签添加css样式
-          $i.css({
-            "z-index": 999,
-            "top": y - 20,
-            "left": x,
-            "position": "absolute",
-            "font-weight": "bold",
-            "color": rand_color()
-          });
-          // 随机颜色
-          function rand_color() {
-            return "rgb(" + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + "," + ~~(255 * Math.random()) + ")"
-          }
-          //在body添加这个标签
-          $("body").append($i);
-          //animate() 方法执行 CSS 属性集的自定义动画。
-          //该方法通过CSS样式将元素从一个状态改变为另一个状态。CSS属性值是逐渐改变的，这样就可以创建动画效果。
-          //详情请看http://www.w3school.com.cn/jquery/effect_animate.asp
-          $i.animate({
-            //将原来的位置向上移动180
-            "top": y - 180,
-            "opacity": 0
-            //1500动画的速度
-          }, 1500, function () {
-            //时间到了自动删除
-            $i.remove();
-          });
-        });
-      })
-      ;
-    </script>
-  
-
-
-
-
-
-
-
-
-</body>
-</html>
+    anchors.add(res.join(", "))</script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){getSearchFile(path),this.onclick=null}</script><script src="/lib/fancybox/jquery.fancybox.min.js"></script><script>$("#post img:not(.no-zoom img, img[no-zoom])").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script type="text/javascript">var a_idx=0;jQuery(document).ready(function(d){d("body").click(function(a){var o=new Array("富强","民主","文明","和谐","自由","平等","公正","法治","爱国","敬业","诚信","友善"),t=d("<span/>").text(o[a_idx]);a_idx=(a_idx+1)%o.length;var n=a.pageX,e=a.pageY;t.css({"z-index":999,top:e-20,left:n,position:"absolute","font-weight":"bold",color:"rgb("+~~(255*Math.random())+","+~~(255*Math.random())+","+~~(255*Math.random())+")"}),d("body").append(t),t.animate({top:e-180,opacity:0},1500,function(){t.remove()})})})</script></body></html>
