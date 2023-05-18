@@ -1,0 +1,945 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="笔者近期的工作涉及到Tensorflow的使用，故而希望补充一些前置知识，本文对GPU相关知识做了简单归纳。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tensorflow前置知识之GPU篇">
+<meta property="og:url" content="http://example.com/posts/5b46bc6/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="笔者近期的工作涉及到Tensorflow的使用，故而希望补充一些前置知识，本文对GPU相关知识做了简单归纳。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/post/nvidia.png">
+<meta property="article:published_time" content="2021-12-25T02:00:00.000Z">
+<meta property="article:modified_time" content="2022-03-21T11:49:14.000Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Tensorflow">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/post/nvidia.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Tensorflow前置知识之GPU篇 - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Tensorflow前置知识之GPU篇"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-12-25 10:00" pubdate>
+          2021年12月25日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：7.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：62 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Tensorflow前置知识之GPU篇</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="1-概念辨析"><a href="#1-概念辨析" class="headerlink" title="1.概念辨析"></a>1.概念辨析</h2><blockquote>
+<p>以下内容源于维基百科<sup id="fnref:1" class="footnote-ref"><a href="#fn:1" rel="footnote"><span class="hint--top hint--rounded" aria-label="[图形处理器 - 维基百科，自由的百科全书 (wikipedia.org)](https://zh.wikipedia.org/wiki/圖形處理器)">[1]</span></a></sup>、Intel官网<sup id="fnref:2" class="footnote-ref"><a href="#fn:2" rel="footnote"><span class="hint--top hint--rounded" aria-label="[What Is a GPU? Graphics Processing Units Defined (intel.com)](https://www.intel.com/content/www/us/en/products/docs/processors/what-is-a-gpu.html)">[2]</span></a></sup><sup id="fnref:4" class="footnote-ref"><a href="#fn:4" rel="footnote"><span class="hint--top hint--rounded" aria-label="[CPU vs. GPU: What's the Difference? (intel.com)](https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html)">[4]</span></a></sup>、GamingScan<sup id="fnref:3" class="footnote-ref"><a href="#fn:3" rel="footnote"><span class="hint--top hint--rounded" aria-label="[GPU vs Graphics Card Simple Guide\] - GamingScan](https://www.gamingscan.com/gpu-vs-graphics-card/)">[3]</span></a></sup></p>
+</blockquote>
+<h3 id="1-1-什么是GPU"><a href="#1-1-什么是GPU" class="headerlink" title="1.1 什么是GPU"></a>1.1 什么是GPU</h3><ul>
+<li><strong>GPU</strong>(<strong>G</strong>raphics <strong>P</strong>rocessing <strong>U</strong>nit)即图形处理单元，又称显示核心、图形处理器(有时也统称显卡)，最初是一种用来加速图形渲染的专用处理器。</li>
+<li>GPU这一概念是NVIDIA公司在1999年8月发行<strong>GeForce 256</strong>绘图处理芯片时首先提出的，此前计算机中并不将其看作独立的计算单元。</li>
+<li>GPU的特性在于能够同时处理大量数据(准确说是同时进行大量简单运算工作)，这对机器学习、视频剪辑及游戏渲染非常有用。</li>
+</ul>
+<h3 id="1-2-GPU与显卡的区别"><a href="#1-2-GPU与显卡的区别" class="headerlink" title="1.2 GPU与显卡的区别"></a>1.2 GPU与显卡的区别</h3><p>我们经常会将“GPU”和“显卡”这两个词混用，但实际上二者存在细微差别。</p>
+<p>就像主板包含CPU一样，<strong>显卡</strong>更像是一块包含了GPU的内插板(add-in board)。除了GPU芯片外，它还包含了电路板(PCB)、显存、接口电路、散热器等大量组件。显卡经常被看作一块完成图形计算、图像信号转换传输的独立硬件。在台式机中多通过主板上的PCIE(<strong>P</strong>eripheral <strong>C</strong>omponent <strong>I</strong>nterconnect <strong>E</strong>xpress)插槽与计算机其他部分相连。在笔记本中受体积和重量的限制，显卡通常会通过非标准或独特的接口作连接。</p>
+<p>直观地说，GPU是图形处理芯片，而显卡则是你购买的最终成品。但在日常讨论中为了简化，这一界限早已被模糊，<strong>本文其他部分的讨论中也会默认“显卡即GPU”的指代。</strong></p>
+<h3 id="1-3-集成GPU与独立GPU"><a href="#1-3-集成GPU与独立GPU" class="headerlink" title="1.3 集成GPU与独立GPU"></a>1.3 集成GPU与独立GPU</h3><p>GPU通常可以看作有两个基本类型，即IGPU(<strong>I</strong>ntegrated <strong>G</strong>raphics <strong>P</strong>rocessing <strong>U</strong>nit)和DGPU(<strong>D</strong>iscrete <strong>G</strong>raphics <strong>P</strong>rocessing <strong>U</strong>nit)，也就是常说的集显(核显)和独显。</p>
+<ul>
+<li><p>独显位于独立的电路板中，通过主板上的PCIE槽与计算机其他部分相连。所谓的“独立”是指该显卡享有专用的内存(即自带显存)。独显的优势在于性能更强、不消耗系统的存储资源、往往拥有一些专用的加速单元(诸如CUDA)，但价格、功率、体积都更高(大)。</p>
+</li>
+<li><p>集显不在独立的电路板上，通常与CPU一起嵌入芯片，也有少部集成在主板上(2009年后罕见)。集显工作时需要借用一部分内存充当显存。集显的优势在于可以使架构更轻薄、功耗更低、设计成本更低，但受限于空间、显存等方面因素，其性能往往较弱。(据Intel统计)市场上绝大部分显卡都是集显，集显也是轻薄本的主力显卡。随着技术的发展，一些集显也有不弱于低端独显的能力。</p>
+<p>目前，独显领域是AMD和INVIDIA(英伟达)争锋。PC端的集显主要是Intel的Iris Plus和Intel的UHD；而在移动设备端，则是由Qualcomm(高通)和MediaTek(联发科)生产GPU，这些GPU往往和CPU及其他核心移动芯片组组件位于同一芯片中。</p>
+</li>
+</ul>
+<h2 id="2-GPU与CPU"><a href="#2-GPU与CPU" class="headerlink" title="2.GPU与CPU"></a>2.GPU与CPU</h2><h3 id="2-1-GPU的优势"><a href="#2-1-GPU的优势" class="headerlink" title="2.1 GPU的优势"></a>2.1 GPU的优势</h3><p>现如今，GPU已经成为计算机中最重要的部件之一，GPU最初设计用来加速3D图形的渲染，但时至今日，GPU已经被赋予了更多可能性。图形程序员可以利用先进的照明和阴影技术来创造更有趣的视觉效果和真实场景，这为视频剪辑制作、游戏效果带来了全新的体验。而其他开发者也开始利用GPU来大幅加速高性能计算、深度学习等。</p>
+<p>我们常说GPU是为并行处理而设计的，更准确地说法是：<strong>GPU被设计用于图形渲染，更适合完成高计算密度和并行处理场景的任务。</strong>这里借用[《NAVIDIA CUDA Programming Guide》](<a target="_blank" rel="noopener" href="https://www.nvidia.cn/docs/IO/51635/NVIDIA_CUDA_Programming_Guide_1.1_chs.pdf">Microsoft Word - CUDA PG 1 1 chs.doc (nvidia.cn)</a>)的一幅图：</p>
+<p><img src="//yunyueze-1256877396.cos.ap-nanjing.myqcloud.com/img/article/1/CPUvsGPU.png" srcset="/img/loading.gif" lazyload alt="CPUvsGPU"></p>
+<center>图1.4.1 CPU与GPU中晶体管的用途比例</center>
+
+<p>从上图中可以直观地看到，GPU将更多的晶体管投入到了运算单元(ALU)，而削弱了控制(Control)和高速缓存(Cache)的能力。这就意味着GPU能同时进行更多简单运算，但在面对需要复杂控制电路配合的运算时则有些捉襟见肘。</p>
+<blockquote>
+<p>以下摘录原书中的两段话(适当调整了措辞断句)</p>
+</blockquote>
+<p>GPU 特别适合于并行数据运算的问题——同一个程序存在许多并行数据元素， 并带有高运算密度（算术运算与内存操作的比例）。由于同一个程序要执行每个数据元素(运算差异小)， 降低了对复杂控制的要求;  并且，因为它处理许多数据元素并据有高运算密度，存储访问的延迟也可以被忽略。   </p>
+<p>并行数据处理，意味着数据元素以并行线程的方式处理。许多处理大量数据(例如数组)的应用程序可以使用一个并行数据的编程模型来加速计算。在3D 渲染上，庞大的像素集和顶点被映射到并行线程中；图像和媒体处理中，例如着色的图像后处理、录像编码和解码、 图像缩放比例、立体视觉以及图像识别也可以映射图像块和像素到并行处理线程中。实际上， 图形领域外的许多算法同样可以通过并行数据处理得到加速，从信号处理、物理模拟到金融计算、生物计算乃至深度学习等。</p>
+<h3 id="2-2-CPU的优势"><a href="#2-2-CPU的优势" class="headerlink" title="2.2 CPU的优势"></a>2.2 CPU的优势</h3><p>再来看CPU，它拥有强大的算术运算单元，可以在很短的时钟周期内完成算术运算；CPU有更大、层次更多的高速缓存单元，有效降低了数据访存取带来的指令时延；CPU拥有复杂的逻辑控制单元，能够完成更困难的控制和调度任务(诸如分支预测等)。CPU是天然的leader，也能够更快、更精确地处理复杂指令。而GPU则是以大吞吐量为前提，简化了控制和数据缓存，靠“数量”取胜。</p>
+<h3 id="2-3-CPU与GPU的分工"><a href="#2-3-CPU与GPU的分工" class="headerlink" title="2.3 CPU与GPU的分工"></a>2.3 CPU与GPU的分工</h3><p>笔者很喜欢一个比喻：GPU的运算速度取决于雇了多少小学生，而CPU的运算速度取决于请了多么厉害的教授。一切抛开控制谈算力的讨论，都是“耍流氓”。CPU和GPU没有谁更强，只有不同场景下谁更合适，他们都是基本的计算引擎，彼此分工不同罢了。Intel官网的一篇文章详尽探讨了CPU和GPU的分工，来帮助计算机使用者更好地设计高性能的软件、更好地根据工作类型搭配硬件(原文参考<sup id="fnref:4" class="footnote-ref"><a href="#fn:4" rel="footnote"><span class="hint--top hint--rounded" aria-label="[CPU vs. GPU: What's the Difference? (intel.com)](https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html)">[4]</span></a></sup>)，笔者摘录意译了一部分内容：</p>
+<h4 id="2-3-1-cpu和gpu的区别"><a href="#2-3-1-cpu和gpu的区别" class="headerlink" title="2.3.1 cpu和gpu的区别"></a>2.3.1 cpu和gpu的区别</h4><p>CPU和GPU有很多共同点，他们都是重要的计算引擎，都是基于硅制造的微处理器，都能处理数据，但GPU和CPU有着不同的架构，是为不同的目的而设计的。</p>
+<p>CPU被看作是计算机系统的大脑，它拥有更复杂的控制、存储和计算结构，适用于更广泛的工作任务，特别是存在延迟或更看重单核性能的工作。CPU是一个强大的执行引擎，它将更少的内核集中在单任务和快速处理上，这使得它从串行计算到运行数据库等多方面都具有独特的优势。</p>
+<p>GPU则由许多粒度更小、用途更专一的核组成。当一个处理任务可以在许多核心之间进行分割和处理时，这些核心可以通过协同工作提供巨大的性能。最初的GPU是为加速特定3D渲染任务而设计的专用处理器，但现在已经变得更加灵活且具备了更强的可编程性。虽然GPU的主要功能仍然集中在图形处理和为顶级游戏提供更加逼真的视觉效果，但不可否认GPU已经发展为了更通用的并行处理器。</p>
+<h4 id="2-3-2-加速深度学习和人工智能"><a href="#2-3-2-加速深度学习和人工智能" class="headerlink" title="2.3.2 加速深度学习和人工智能"></a>2.3.2 加速深度学习和人工智能</h4><p>GPU的并行处理和高密度计算优势，使得对于多层神经网络的深度学习模型训练或大量特定数据集(如二维图片)的处理，GPU能提供更理想的加速效果。此外，现在很多深度学习算法都被改编为适用GPU加速的方法。</p>
+<p>时过境迁，CPU和其上运行的软件库也发展地更加适用深度学习。例如因特尔至强系列中的Intel Deep Learning Boost，就是通过优化大量的软件库、增加专用的AI硬件来优化深度学习任务的性能。此外，在一些非图像深度学习任务中(诸如：语言类、文本类、时序数据)，CPU大放异彩；对于复杂的模型或者深度学习应用(诸如二维图像的检测任务)，CPU也能通过提供比GPU大得多的内存来表现出更好的性能。</p>
+<p><strong>From CPU vs. GPU to CPU and GPU !</strong></p>
+<h2 id="3-NVIDIA-GPU系列"><a href="#3-NVIDIA-GPU系列" class="headerlink" title="3. NVIDIA GPU系列"></a>3. NVIDIA GPU系列</h2><p>目前主要的独显厂家是NVIDIA和AMD，限于篇幅我们将着重介绍NVIDIA的显卡系列。</p>
+<blockquote>
+<p>以下内容参考 博文<sup id="fnref:5" class="footnote-ref"><a href="#fn:5" rel="footnote"><span class="hint--top hint--rounded" aria-label="[【GPU编程系列之一】从深度学习选择什么样的gpu来谈谈gpu的硬件架构 | 听见下雨的声音 (chenrudan.github.io)](https://chenrudan.github.io/blog/2015/12/20/introductionofgpuhardware.html)">[5]</span></a></sup>  知乎<sup id="fnref:7" class="footnote-ref"><a href="#fn:7" rel="footnote"><span class="hint--top hint--rounded" aria-label="[NVIDIA GPU 架构梳理 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/394352476)">[7]</span></a></sup>维基百科<sup id="fnref:6" class="footnote-ref"><a href="#fn:6" rel="footnote"><span class="hint--top hint--rounded" aria-label="[List of Nvidia graphics processing units - Wikipedia](https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units)">[6]</span></a></sup></p>
+</blockquote>
+<p>英伟达的显卡，通常基于<strong>微架构</strong>设计<strong>芯片</strong>，根据<strong>显卡系列</strong>的受众来设计显卡并实装芯片，同一系列当中再进行不同性能等级的硬件定制从而分化出<strong>系列型号或档次</strong>(尤以GeFore系列为例)，在同一型号的同一代中又会通过设计微调来细分性能档次，从而形成了非常严密的系列(性能、价格)递进(也有可能乱序)，被显卡用户戏称为“老黄刀法精确”。这样繁杂的划分(调整)之下，通过显卡命名来判定不同显卡间性能的差异变得比较困难。 </p>
+<h3 id="3-1-GPU微架构"><a href="#3-1-GPU微架构" class="headerlink" title="3.1 GPU微架构"></a>3.1 GPU微架构</h3><p>英伟达的第一款GPU架构致敬摄氏温度，此后则多致敬历史上著名的科学家，截至2021年英伟达总共提出了12种微架构，按照时间先后顺序列出其名称、发布时间及命名致敬：</p>
+<table>
+<thead>
+<tr>
+<th>架构名</th>
+<th>发布时间</th>
+<th>命名致敬</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Celsius</td>
+<td>1999</td>
+<td>摄氏度(温度单位)</td>
+</tr>
+<tr>
+<td>Kelvin</td>
+<td>2001</td>
+<td>威廉·汤姆森<br/>(开尔文温度提出者)</td>
+</tr>
+<tr>
+<td>Rankine</td>
+<td>2003</td>
+<td>兰金(兰氏温度提出者)</td>
+</tr>
+<tr>
+<td>Curie</td>
+<td>2004</td>
+<td>居里夫人</td>
+</tr>
+<tr>
+<td>Tesla</td>
+<td>2006</td>
+<td>特斯拉</td>
+</tr>
+<tr>
+<td>Fermi</td>
+<td>2010</td>
+<td>费米</td>
+</tr>
+<tr>
+<td>Kepler</td>
+<td>2012</td>
+<td>开普勒</td>
+</tr>
+<tr>
+<td>Maxwell</td>
+<td>2014</td>
+<td>麦克斯韦</td>
+</tr>
+<tr>
+<td>Pascal</td>
+<td>2016</td>
+<td>帕斯卡</td>
+</tr>
+<tr>
+<td>Volta</td>
+<td>2017</td>
+<td>伏打</td>
+</tr>
+<tr>
+<td>Turing</td>
+<td>2018</td>
+<td>图灵</td>
+</tr>
+<tr>
+<td>Ampere</td>
+<td>2020</td>
+<td>安培</td>
+</tr>
+</tbody></table>
+<p>微架构(MicroArchitecture)指的是处理器的设计方式(设计思想)，可以具体到处理器簇中有多少core、是否包含L1或L2缓存、是否有双精度计算单元等等。</p>
+<h3 id="3-2-GPU芯片"><a href="#3-2-GPU芯片" class="headerlink" title="3.2 GPU芯片"></a>3.2 GPU芯片</h3><p>英伟达的显卡芯片命名规则为：<strong>G</strong>(GPU) + <strong>X</strong>(芯片所用架构名的首字母) + <strong>数字</strong>(表示型号)。例如：GT200，表示基于Tesla架构设计的200代(型)芯片。同一架构的芯片设计思路相同，但在细节上会有改变，例如：GK210比GK110的寄存器数目多一倍。 </p>
+<h3 id="3-3-显卡系列"><a href="#3-3-显卡系列" class="headerlink" title="3.3 显卡系列"></a>3.3 显卡系列</h3><p>英伟达将旗下设计的显卡分为三类：GeFore系列(用于家庭娱乐)、Quadro系列(用于工作站)、Tesla系列(用于服务器)。</p>
+<ul>
+<li><p>对于Tesla系列而言，其没有显示输出接口，仅仅专注于数据计算，主要类型：</p>
+<ul>
+<li>K型卡：专注于高性能科学计算，比较突出的优点是具有较高的双精度浮点运算能力，并且支持ECC内存。</li>
+<li>M型卡：专门用于深度学习网络训练的显卡。</li>
+</ul>
+</li>
+<li><p>对于GeFore系列而言，有图形输出接口。</p>
+<ul>
+<li>(仅供了解 不要抬杠)从历史角度来看，GPU的类型(型号)是不同硬件的定制，可以理解为不同性能规格(主要体现在时钟频率和显存的增强)：G&#x2F;GS(入门)  &lt; GT(普通) &lt; GTS(中端) &lt; GTX(高端)。笔者只希望读者了解这段历史，但并不希望读者套用到当下环境中。</li>
+<li>随着时间推移，GeFore型号名开始变成了粗分显卡性能的<strong>前缀词</strong>，当下这个前缀词更是成为了显卡性能或技术的时代标志，例如目前最新的RTX系列，就是因为引入光线追踪技术(<strong>R</strong>ay <strong>T</strong>racing)而得名。它与GTX不能再看作同时代产品的不同硬件定制，而是GeFore系列下不同技术时代的产品，RTX系列表示的是GeFore显卡最新技术和更高性能天花板的产物。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-4-GeForce显卡命名规则"><a href="#3-4-GeForce显卡命名规则" class="headerlink" title="3.4 GeForce显卡命名规则"></a>3.4 GeForce显卡命名规则</h3><p>以GeForce GTX 1660 Ti为例，英伟达推出的GeForce显卡一般遵循如下命名规则：</p>
+<p> <strong>GeForce</strong>(显卡系列)  <strong>GTX</strong>(显卡前缀) <strong>16</strong>(系列编号或称代数)  <strong>6</strong>(显卡性能档次定位) <strong>0</strong>(末尾数字一般为0 用来补位)   <strong>Ti</strong>(后缀)</p>
+<p>其中要注意：</p>
+<ul>
+<li>代数：英伟达GeForce显卡的代数(系列编号)很不规整，详情参考<a href="#series">1.6.5</a>。</li>
+<li>后缀：没有后缀是正常版、SE后缀是削弱版、Ti后缀是加强版( 一般加Ti的比正常版频率提高30%左右 有测试者称 实际性能提升约20%) 、M后缀一般是笔记本电脑专用等，后缀还有LE、super、pro等，会根据市场情况不定时增减，日常关注有无Ti即可。</li>
+<li>特别的，当命名中存在MX或M字样时，表示该显卡是用在笔记本端的。</li>
+</ul>
+<h3 id="3-5-GeForce系列-完整版"><a href="#3-5-GeForce系列-完整版" class="headerlink" title=" 3.5 GeForce系列(完整版)"></a><span id="series"> </span>3.5 GeForce系列(完整版)</h3><p>思前想后，笔者还是决定专开一栏对GeForce不同代的命名差异做一下整理，下面主要介绍Desktop GPU的GeForce series及他们的一些特点。</p>
+<ul>
+<li><p>GeForce 256：是GPU的开山鼻祖，首次使用Celsius 微架构，始发于1999年，有GeForce 256 SDR和GeForce 256 DDR两款。</p>
+</li>
+<li><p>GeForce2系列：这一系列开始划分出多种型号，始发是2000年的GeForce2 GTS。</p>
+</li>
+<li><p>GeForce3系列：2001年发布的GeForce，首次使用Kelvin架构，是全球第一款支持DX8(Direct3D 8.0)的显卡，游戏福音。</p>
+</li>
+<li><p>GeForce4系列：2002年发布的GeForce4 Ti 4200，支持高效抗锯齿技术(<strong>A</strong>ccuview <strong>A</strong>ntialiasing)，更好的图形显示(游戏画面)效果。是NVIDIA历史上性价比最高的卡。</p>
+</li>
+<li><p>GeForce FX系列：首次使用Rankine架构，采用了更成熟的DDR显存，支持DX9技术，并在多方面做了优化改进，标志英伟达真正意义上的高端显卡出现，首发2003年。</p>
+</li>
+<li><p>GeForce6系列：首次使用Curie架构，除了性能巨大提升，还创造出基于PCIE的SLI(<strong>S</strong>calable <strong>L</strong>ink <strong>I</strong>nterface)模式，在一块支持双PCIE接口的主板上可以同时使用两块同型号的PCIE显卡，首发2004年。</p>
+</li>
+<li><p>GeForce7系列：2005年首发的GTX 7800GT，是首款消费级的双芯显卡，<strong>GTX入场</strong>。</p>
+</li>
+<li><p>GeForce8系列：2007年首发，是首款使用<strong>Tesla微架构芯片</strong>的显卡，<strong>引入了CUDA</strong>。</p>
+</li>
+<li><p>GeForce9系列：2008年首发的GeForce 9600GT，对8系列作了完美改进，提高性能降低功耗。也是GeForceX系列的最后荣光。</p>
+</li>
+<li><p>GeForce 100系列：2009年首发，并且开始使用GeForce G&#x2F;GT&#x2F;GTS来代表不同级别。</p>
+</li>
+<li><p>GeForce 200系列：2009年首发的GTX 280，正式开启了全新的GeForce GTX 200系列，该系列显卡拥有图形处理和并行计算结构体系。</p>
+</li>
+<li><p>GeForce 300系列：2009年11月首发GeForce 310,本系列没有GTX，支持了DX10。</p>
+</li>
+<li><p>GeForce 400系列：2010年首发的GEForce GTX 480，首次支持Fermi架构。</p>
+</li>
+<li><p>GeFroce 500系列：2011年首发的GTX 580中采用完整的Fermi核心(512个流处理器)。</p>
+</li>
+<li><p>GeForce 600系列：2012年首发GTX680，采用全新的Kepler架构和台积电28nm工艺，英伟达显卡突破性地加入了动态加速，年底发布了更强悍的GTX690。</p>
+</li>
+<li><p>GeForce 700系列：2013年首发了<strong>GTX TITAN</strong>、GTX780Ti，由于第一代Kepler架构表现良好，英伟达推出了大核心芯片GK110，并将实装该芯片的显卡命名为TITAN系列，这是首次没采用数字编号命名显卡，也是N卡家族中第一代TITAN，至此TITAN成为了N卡中至强的代表，官网驱动下载页甚至将TITAN看作了与GeFroce并列的系列。</p>
+</li>
+<li><p>GeForce 800系列：抱歉，没有这个系列，又又又跳卡了。</p>
+</li>
+<li><p>GeForce 900系列：2014年首发的GTX 980和GTX 970，采用了全新的Maxwell架构。</p>
+</li>
+<li><p>GeForce 10系列：2016年发布了GTX1080(旗舰)、GTX 1070(高端)、GTX1060(中高端)，采用了全新的Pascal架构，并且工艺达到了16nm，晶体管数量暴增，核心频率大幅提升，超频轻松突破2GHz，带来了GDDR5X显存、异步运算改进、新的VR技术等。在2017年发布的<strong>GTX1080 Ti</strong>更是顶配的Pascal架构显卡，超越了当时最强卡皇TITAN X，成为了<strong>GTX时代的神话卡</strong>。</p>
+</li>
+<li><p>GeForce 20系列(RTX20)：2018年首发的GeForce RTX2080Ti、RTX2070、RTX2060，不仅采用了全新的Turing架构，并且引入了光线追踪技术，也正式宣告了GTX时代的落幕，<strong>20之后再无GTX，RTX代替GTX成为显卡市场主力军。</strong>同年12月，英伟达发布了RTX中的第一块TITAN霸主，全称Nvidia TITAN RTX。</p>
+</li>
+<li><p>GeForce 16系列：2019年发布了GTX 1650、GTX1650Spuer、1660、1660Super、1660Ti，GeForce 16系列是GTX最后的荣光，<strong>是GeForce 20系列的阉割版本，相比10系列提升并不大，但使用的是下一代架构Turing。</strong></p>
+</li>
+<li><p>GeForce 30系列(RTX30)：</p>
+<ul>
+<li>2020年发布的RTX 3090、RTX 3080、RTX3070，采用了全新的Ampere架构，相比RTX20的Turing架构是革命性提升，Ampere集成了第二代RT光线追踪核心、第三代Tensor张量核心。其中的旗舰卡RTX3090搭载了24GB的GDDR6X显存，拥有10496个流处理器，在游戏和深度学习方面带来了前所未有的体验。</li>
+<li>2021年为了调节挖矿对显卡市场的冲击，发布了”锁矿”的RTX 3060，实际效果欠佳，后又删除。</li>
+<li>2021年，为了弥补RTX3090和RTX3080之间的性能差距，于6月份发布了RTX 3080 Ti 和RTX 3070 Ti。</li>
+</ul>
+<h3 id="3-6-显卡天梯图"><a href="#3-6-显卡天梯图" class="headerlink" title="3.6 显卡天梯图"></a>3.6 显卡天梯图</h3><blockquote>
+<p>更多显卡性能的比较，可以搜索2021显卡天梯图 或 gpu hierarchy 2021，下面pull一张来自 百度贴吧<em>秋刀鱼半藏</em> 大佬更新于2021年11月的显卡天梯图。</p>
+<p>详情移步: <a target="_blank" rel="noopener" href="https://tieba.baidu.com/p/6133450546?see_lz=1#135699450528l">《史上最全桌面级显卡天梯图》专用更新帖(公测版)_amd吧</a></p>
+</blockquote>
+</li>
+</ul>
+<p><img src="//yunyueze-1256877396.cos.ap-nanjing.myqcloud.com/img/article/1/GPURank.jpg" srcset="/img/loading.gif" lazyload alt="GPURank"></p>
+<!-- ![GPURank](https://tiebapic.baidu.com/forum/pic/item/75bccbef76094b36e78da4fffecc7cd98d109d92.jpg?tbpicau=2022-03-23-05_9187fba72f56c70f6ee82ae96269ae6c) -->
+
+
+
+
+<section class="footnotes"><div class="footnote-list"><ol><li><span id="fn:1" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%9C%96%E5%BD%A2%E8%99%95%E7%90%86%E5%99%A8">图形处理器 - 维基百科，自由的百科全书 (wikipedia.org)</a>
+<a href="#fnref:1" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:2" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/products/docs/processors/what-is-a-gpu.html">What Is a GPU? Graphics Processing Units Defined (intel.com)</a>
+<a href="#fnref:2" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:3" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.gamingscan.com/gpu-vs-graphics-card/">GPU vs Graphics Card Simple Guide] - GamingScan</a>
+<a href="#fnref:3" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:4" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/products/docs/processors/cpu-vs-gpu.html">CPU vs. GPU: What’s the Difference? (intel.com)</a>
+<a href="#fnref:4" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:5" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://chenrudan.github.io/blog/2015/12/20/introductionofgpuhardware.html">【GPU编程系列之一】从深度学习选择什么样的gpu来谈谈gpu的硬件架构 | 听见下雨的声音 (chenrudan.github.io)</a>
+<a href="#fnref:5" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:6" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units">List of Nvidia graphics processing units - Wikipedia</a>
+<a href="#fnref:6" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:7" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/394352476">NVIDIA GPU 架构梳理 - 知乎 (zhihu.com)</a>
+<a href="#fnref:7" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:8" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.sohu.com/a/470642262_120973764">快速回顾NVIDIA显卡发展史，看看小伙伴们都用过哪些显卡。_GeForce (sohu.com)</a>
+<a href="#fnref:8" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:9" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://tieba.baidu.com/p/6133450546?see_lz=1#135699450528l">《史上最全桌面级显卡天梯图》专用更新帖(公测版)_amd吧</a>
+<a href="#fnref:9" rev="footnote" class="footnote-backref"> ↩</a></span></span></li></ol></div></section>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Tensorflow/">#Tensorflow</a>
+      
+        <a href="/tags/GPU/">#GPU</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Tensorflow前置知识之GPU篇</div>
+      <div>http://example.com/posts/5b46bc6/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年12月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/posts/5e277129/" title="Anaconda 学习整理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Anaconda 学习整理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/7c8dee09/" title="A Free Try For YaCy">
+                        <span class="hidden-mobile">A Free Try For YaCy</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>

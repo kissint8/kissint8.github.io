@@ -1,0 +1,930 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="笔者通过阿里云的学生&quot;在家实践计划&quot;获得了一台2核4G的云ECS实例，安装了Centos8镜像,并尝试部署一套后端管理生产环境(LNMP+Django)。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS8后端开发环境(LNMP)部署">
+<meta property="og:url" content="http://example.com/posts/95e2d64f/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="笔者通过阿里云的学生&quot;在家实践计划&quot;获得了一台2核4G的云ECS实例，安装了Centos8镜像,并尝试部署一套后端管理生产环境(LNMP+Django)。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/post/nginx.png">
+<meta property="article:published_time" content="2020-02-06T10:45:00.000Z">
+<meta property="article:modified_time" content="2022-06-25T06:53:23.000Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Django">
+<meta property="article:tag" content="CentOS8">
+<meta property="article:tag" content="Nginx">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/post/nginx.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>CentOS8后端开发环境(LNMP)部署 - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CentOS8后端开发环境(LNMP)部署"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2020-02-06 18:45" pubdate>
+          2020年2月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：50 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CentOS8后端开发环境(LNMP)部署</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>前言:笔者通过阿里云的学生”<a target="_blank" rel="noopener" href="https://developer.aliyun.com/adc/student/#ecscolleges-collocation-stu">在家实践计划</a>“获得了一台2核4G的云ECS实例，并安装了Centos8镜像。于是尝试部署一套Django的生产环境。笔者选择了  Nginx + uwsgi + mysql +Python3的方式。主机自带了python3和pip3。笔者自行安装了剩下的部分。其中，mysql的安装借鉴了这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43232506/article/details/102816659">参考博文</a>。如有疑问欢迎大家在评区留言。<br>附言:以下操作，笔者都是以root身份进行的，读者以其他用户进行时，请酌情在命令前加上sudo。</p>
+</blockquote>
+<h2 id="1-Nginx"><a href="#1-Nginx" class="headerlink" title="1.Nginx"></a>1.Nginx</h2><h5 id="1-1阿里云放通80端口"><a href="#1-1阿里云放通80端口" class="headerlink" title="1.1阿里云放通80端口"></a>1.1阿里云放通80端口</h5><p>在阿里云的控制台中，对实例主机配置安全组，在入方向新增80端口的安全规则。配置如有疑问请参考<a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/25475.html?spm=5176.2020520101.121.1.57bb4df5DMKEqy">官方说明</a>。</p>
+<h5 id="1-2安装nginx"><a href="#1-2安装nginx" class="headerlink" title="1.2安装nginx"></a>1.2安装nginx</h5><p>由于笔者对nginx的版本没有过多要求，此处采用dnf包管理方式安装，此处笔者dnf安装的是14.1版本。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">dnf <span class="token function">install</span> <span class="token parameter variable">-y</span> nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>安装完成后，可以查看一下版本，以验证是否正确安装。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nginx <span class="token parameter variable">-v</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="1-3nginx管理"><a href="#1-3nginx管理" class="headerlink" title="1.3nginx管理"></a>1.3nginx管理</h5><p>基于dnf安装的nginx已经做好了相关设置，可以使用nginx -s、systemctl对nginx进行便捷管理。<br>systemctl管理常用:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl <span class="token builtin class-name">enable</span> nginx <span class="token comment">#开机自启动nginx</span>
+systemctl disable nginx <span class="token comment">#开机禁止启动nginx</span>
+systemctl status nginx <span class="token comment">#查看nginx服务状态</span>
+systemctl start nginx <span class="token comment">#开启nginx服务</span>
+systemctl stop nginx <span class="token comment">#终止nginx服务</span>
+systemctl restart nginx <span class="token comment">#重启nginx服务 </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>相比之下，笔者还是更喜欢直接使用原生的nginx自带命令<br>通过nginx -h 读者可以查看到nginx常用命令及说明，笔者摘录了一部分</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nginx <span class="token parameter variable">-V</span>			 <span class="token comment">#查看nginx版本和配置项内容</span>
+nginx <span class="token parameter variable">-t</span> 			 <span class="token comment">#检查配置文件是否正确</span>
+nginx <span class="token parameter variable">-c</span>  配置文件路径 <span class="token comment">#选用某一配置文件</span>
+nginx 				 <span class="token comment">#启动nginx</span>
+nginx <span class="token parameter variable">-s</span> reload 	 <span class="token comment">#重新载入配置文件</span>
+nginx <span class="token parameter variable">-s</span> stop		 <span class="token comment">#停止nginx</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<h5 id="1-4nginx使用"><a href="#1-4nginx使用" class="headerlink" title="1.4nginx使用"></a>1.4nginx使用</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl start nginx <span class="token comment">#或者直接使用nginx 启动nginx服务</span>
+systemctl status nginx <span class="token comment">#若看到Active变为active(running)则启动正常</span>
+<span class="token function">lsof</span> <span class="token parameter variable">-i:80</span>			<span class="token comment">#可以看到80端口已经被nginx监听了</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>上面一系列检查确认nginx正常启动后，可以到浏览器输入公网地址或域名，看到nginx欢迎页。<br>nginx默认配置中监听80端口的配置项所在根位置，对应nginx程序安装目录下的html目录。我们通过<code>nginx -V</code>可以看到，dnf安装后，nginx安装位置在&#x2F;usr&#x2F;share&#x2F;nginx,配置文件在&#x2F;etc&#x2F;nginx&#x2F;nginx.conf。(欢迎页就是&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;index.html)。<br>笔者还是更习惯将网站目录设置在&#x2F;var&#x2F;www下，我们可以这样来修改:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /var/www/mysite					  <span class="token comment">#创建网站目录</span>
+<span class="token function">cp</span> /usr/share/nginx/html/* /var/www/mysite/   <span class="token comment">#笔者暂时没网站,先用默认</span>
+<span class="token function">cp</span> /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak <span class="token comment">#备份配置文件</span>
+<span class="token function">vim</span> /etc/nginx/nginx.conf						<span class="token comment">#打开配置文件 按i编辑</span>
+<span class="token comment">##找到其中http->listen80的server项->修改root为/var/www/mysite;</span>
+<span class="token comment">##按ESC后输入:wq 保存退出</span>
+nginx <span class="token parameter variable">-t</span>						<span class="token comment">#测试配置文件是否修改正确</span>
+nginx <span class="token parameter variable">-s</span> relod 					<span class="token comment">#无误后重新载入配置文件</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>大功告成，网站目录修改成功。(准确说是80端口web内容映射的根目录位置)</p>
+<h2 id="2-Mysql"><a href="#2-Mysql" class="headerlink" title="2.Mysql"></a>2.Mysql</h2><h5 id="2-1安装mysql8-0"><a href="#2-1安装mysql8-0" class="headerlink" title="2.1安装mysql8.0"></a>2.1安装mysql8.0</h5><p>Centos8的dnf对懒人那是相当友好。mysql8.0的完全可以一条命令解决:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">dnf <span class="token function">install</span> <span class="token parameter variable">-y</span> @mysql  <span class="token comment">#@mysql模块将安装MySQL8.0及其所有依赖项</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h5 id="2-2启动mysql"><a href="#2-2启动mysql" class="headerlink" title="2.2启动mysql"></a>2.2启动mysql</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl <span class="token builtin class-name">enable</span> mysqld   <span class="token comment">#配置mysql开机自启动</span>
+systemctl start mysqld       <span class="token comment">#启动mysqld</span>
+systemctl status mysqld   <span class="token comment">#查看mysql是否启动成功(active running)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="2-3安全设置"><a href="#2-3安全设置" class="headerlink" title="2.3安全设置"></a>2.3安全设置</h5><p>运行如下脚本，可以设置mysql的root密码，并引导你完成一些必要的安全设置。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql_secure_installation<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>首先，脚本会让你选择是否配置VALIDATE PASSWORD PLUGIN(密码验证插件)，该插件用来检查mysql用户所设置的密码强度，只有达到一定强度的密码才允许被设置。如果你希望设置请输入y或者Y回车，不想请直接回车。若选择了配置，紧接着你将选择所采用密码验证策略的级别：</p>
+<blockquote>
+<p>低:密码长度不少于8位<br>中:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合。<br>强:密码长度不少于8位，必须是数字、大小写字母、特殊字母混合，需配合字典文件。</p>
+</blockquote>
+<p>通常，我们选择中级别即可。</p>
+<p>其次，将要求用户输入两次为root设置的新密码，上一步骤设置的密码验证策略将发挥作用，并对用户设置的密码强度进行打分。设置好密码以后，会提示用户是否继续采用密码保护，选择y回车。</p>
+<p>紧接着，将询问用户是否删除匿名用户，选择y回车。</p>
+<blockquote>
+<p>默认情况下，MySQL有一个匿名用户，允许任何人登录MySQL，而不必创建用户帐户。这仅用于测试，或者安装时更便利。但在部署生产环境之前，应该先删除匿名用户。</p>
+</blockquote>
+<p>然后，将询问用户是否禁止以root身份远程登陆mysql，选择y回车。</p>
+<blockquote>
+<p>通常，mysql中的root用户应只允许通过本地登陆，而不能远程登陆。这样可以降低root用户密码被爆破的风险。</p>
+</blockquote>
+<p>此后，将询问用户是否删除测试数据库，选择y回车。</p>
+<blockquote>
+<p>默认情况下，MySQL总有一个名为’test’的数据库，允许任何用户访问。这仅用于安装时的测试，但在部署生产环境之前，应该先删除该数据库。</p>
+</blockquote>
+<p>最后，脚本询问用户是否现在重载 privilege tables，以使当前所有修改立刻生效。选择y回车。</p>
+<p>当我们在终端中键入:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql <span class="token parameter variable">-uroot</span> <span class="token parameter variable">-p</span> 			<span class="token comment">#回车输入密码并确认</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>即可登陆mysql。</p>
+<h2 id="3-Django"><a href="#3-Django" class="headerlink" title="3.Django"></a>3.Django</h2><p>Django作为python得力的重量级web框架，一直备受青睐。</p>
+<h5 id="3-1安装django"><a href="#3-1安装django" class="headerlink" title="3.1安装django"></a>3.1安装django</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip3 <span class="token function">install</span> django<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h5 id="3-2关联mysql"><a href="#3-2关联mysql" class="headerlink" title="3.2关联mysql"></a>3.2关联mysql</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">dnf <span class="token function">install</span> mysql-devel
+pip3 <span class="token function">install</span> mysqlclient<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<h5 id="3-3Django项目"><a href="#3-3Django项目" class="headerlink" title="3.3Django项目"></a>3.3Django项目</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">django-admin startproject  myproject   <span class="token comment">#创建一个名为myproject的项目</span>
+<span class="token builtin class-name">cd</span> myproject
+python3 manage.py startapp dg_mypr  <span class="token comment">#创建一个应用dg_mypr用来映射数据库</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>上述创建的应用，通过在models.py中利用Django的ORM映射数据库的表和字段，一般为了统一我们会使该应用与数据库同名。</p>
+<p>打开项目下的配置文件settings.py</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">
+DATABASES <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">'default'</span><span class="token punctuation">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token string">'ENGINE'</span><span class="token punctuation">:</span> <span class="token string">'django.db.backends.sqlite3'</span><span class="token punctuation">,</span>
+        <span class="token string">'NAME'</span><span class="token punctuation">:</span> os<span class="token punctuation">.</span>path<span class="token punctuation">.</span>join<span class="token punctuation">(</span>BASE_DIR<span class="token punctuation">,</span> <span class="token string">'db.sqlite3'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">#上述内容修改为mysql引擎，填入要连接的数据库信息</span>
+<span class="token comment">#要注意的是 这里的数据库必须是提前创建好的！！！！！</span>
+DATABASES <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">'default'</span><span class="token punctuation">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token string">'ENGINE'</span><span class="token punctuation">:</span> <span class="token string">'django.db.backends.mysql'</span><span class="token punctuation">,</span>
+        <span class="token string">'NAME'</span><span class="token punctuation">:</span> <span class="token string">'数据库名'</span><span class="token punctuation">,</span>
+        <span class="token string">'USER'</span><span class="token punctuation">:</span> <span class="token string">'root'</span><span class="token punctuation">,</span>
+        <span class="token string">'PASSWORD'</span><span class="token punctuation">:</span> <span class="token string">'密码'</span><span class="token punctuation">,</span>
+        <span class="token string">'HOST'</span><span class="token punctuation">:</span> <span class="token string">'localhost'</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment">#在这里插入新创建的app</span>
+INSTALLED_APPS <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'django.contrib.admin'</span><span class="token punctuation">,</span>
+    <span class="token string">'django.contrib.auth'</span><span class="token punctuation">,</span>
+    <span class="token string">'django.contrib.contenttypes'</span><span class="token punctuation">,</span>
+    <span class="token string">'django.contrib.sessions'</span><span class="token punctuation">,</span>
+    <span class="token string">'django.contrib.messages'</span><span class="token punctuation">,</span>
+    <span class="token string">'django.contrib.staticfiles'</span><span class="token punctuation">,</span>
+    <span class="token string">'dg_mypr'</span><span class="token punctuation">,</span>						<span class="token comment">#加入dg_mypr</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">DEBUG <span class="token operator">=</span> <span class="token boolean">True</span>			<span class="token comment">#测试中打开Debug 生产环境请关闭</span>
+ALLOWED_HOSTS <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">u'*'</span><span class="token punctuation">]</span>	<span class="token comment">#修改白名单为全通</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>修改完成后，保存退出。<br>(在dg_mypr中的models.py中定义ORM映射模型的步骤略)<br>改好配置文件并创建模型后，我们可以使用</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 manage.py check 		  <span class="token comment">#确认正常连接数据库且语法正确(0 issues)</span>
+python3 manage.py makemigrations  <span class="token comment">#根据模型建立migration</span>
+python3 manage.py migrate		  <span class="token comment">#根据migration在数据库中建立对应的表</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>此后若需要应用新的ORM建模，可以在清库后，删除dg_mypr&#x2F;migrations目录下的__pycache__和0001_initial.py，重复上述两步操作即可。<br>最后，我们可以在开着debug的情况下应用runserver跑一个端口测试一下:<br>(确保阿里云安全策略组已开放该端口)</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 manage.py runserver <span class="token number">0.0</span>.0.0:8080  <span class="token comment">#监听8080端口建立项目服务</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>当浏览器访问http:&#x2F;&#x2F;公网地址:端口 后，若载入了Django欢迎页，则进入下一步骤。</p>
+<h2 id="4-uWSGI"><a href="#4-uWSGI" class="headerlink" title="4.uWSGI"></a>4.uWSGI</h2><h5 id="4-1安装uwsgi"><a href="#4-1安装uwsgi" class="headerlink" title="4.1安装uwsgi"></a>4.1安装uwsgi</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 <span class="token parameter variable">-m</span> pip <span class="token function">install</span> uwsgi
+<span class="token comment">#安装完成后测试一下</span>
+uwsgi <span class="token parameter variable">--version</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="4-2写项目配置文件"><a href="#4-2写项目配置文件" class="headerlink" title="4.2写项目配置文件"></a>4.2写项目配置文件</h5><p>在项目的目录 &#x2F;var&#x2F;www&#x2F;mysite&#x2F;myproject 下创建一个ini配置文件<br>并创建一个目录uwsgi用来存放运行相关文件 </p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">touch</span> myproject.ini
+<span class="token function">mkdir</span> uwsgi<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<p>在myproject.ini中写入:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-ini" data-language="ini"><code class="language-ini"><span class="token comment"># myproject.ini </span>
+<span class="token section"><span class="token punctuation">[</span><span class="token section-name selector">uwsgi</span><span class="token punctuation">]</span></span>
+<span class="token comment">#内部转发端口 只要不被占用可随意找 需和nginx.conf里的转发口匹配</span>
+<span class="token key attr-name">socket</span> <span class="token punctuation">=</span> <span class="token value attr-value">:8888</span>	
+<span class="token comment">#django 项目目录</span>
+<span class="token key attr-name">chdir</span>           <span class="token punctuation">=</span> <span class="token value attr-value">/var/www/mysite/myproject</span>
+<span class="token comment">#Django 项目下 wsgi.py 文件</span>
+<span class="token key attr-name">module</span>          <span class="token punctuation">=</span> <span class="token value attr-value">myproject.wsgi</span>
+<span class="token key attr-name">master</span>          <span class="token punctuation">=</span> <span class="token value attr-value">true</span>
+<span class="token comment">#进程数</span>
+<span class="token key attr-name">processes</span>       <span class="token punctuation">=</span> <span class="token value attr-value">4</span>
+<span class="token key attr-name">vacuum</span>          <span class="token punctuation">=</span> <span class="token value attr-value">true</span>
+<span class="token comment">#status文件，可以查看uwsgi的运行状态</span>
+<span class="token key attr-name">stats</span>           <span class="token punctuation">=</span><span class="token value attr-value">%(chdir)/uwsgi/uwsgi.status</span>
+<span class="token comment">#pid文件，通过该文件可以控制uwsgi的重启和停止</span>
+<span class="token key attr-name">pidfile</span>         <span class="token punctuation">=</span><span class="token value attr-value">%(chdir)/uwsgi/uwsgi.pid</span>
+<span class="token comment">#日志文件，通过该文件查看uwsgi的日志</span>
+<span class="token key attr-name">daemonize</span>       <span class="token punctuation">=</span><span class="token value attr-value">%(chdir)/uwsgi/uwsgi.log</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="4-3写nginx配置文件"><a href="#4-3写nginx配置文件" class="headerlink" title="4.3写nginx配置文件"></a>4.3写nginx配置文件</h5><p>在nginx配置文件nginx.conf中加入</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-hoon" data-language="hoon"><code class="language-hoon"><span class="token function">server</span> &#123;
+    <span class="token function">listen</span> 8080; #暴露给外部访问的端口 根据实际指定 确认阿里云策略组已放行
+    <span class="token function">server</span>_<span class="token function">name</span> <span class="token function">localhost</span>;
+      <span class="token function">charset</span> <span class="token function">utf-8</span>;
+    <span class="token function">location</span> / &#123;
+   <span class="token function">include</span> <span class="token function">uwsgi</span>_<span class="token function">params</span>;
+    <span class="token function">uwsgi</span>_<span class="token function">pass</span> 127.0.0.1:8888; #外部访问端口就转发到内部端口 要与项目配置文件里的一致
+    &#125;
+    <span class="token function">location</span> /<span class="token function">static</span>/ &#123;
+        <span class="token function">alias</span> /<span class="token function">var</span>/<span class="token function">www</span>/<span class="token function">mysite</span>/<span class="token function">myproject</span>/<span class="token function">static</span>/; #项目静态路径设置
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>写完后运行 <code>nginx -t</code>检测一下是否有语法错误<br>然后运行<code>nginx -s reload</code>重新载入配置文件</p>
+<h5 id="4-4运行"><a href="#4-4运行" class="headerlink" title="4.4运行"></a>4.4运行</h5><p>回到项目目录 运行 <code>uwsgi --ini myproject.ini</code>即可<br>可运行<code>cat uwsgi/uwsgi.log</code>查看一下是否正常启动了uwsgi<br>当看到如下内容 说明正常启动了</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-shell-session" data-language="shell-session"><code class="language-shell-session"><span class="token output">*** uWSGI is running in multiple interpreter mode ***
+spawned uWSGI master process (pid: 1405)
+spawned uWSGI worker 1 (pid: 1413, cores: 1)
+spawned uWSGI worker 2 (pid: 1414, cores: 1)
+spawned uWSGI worker 3 (pid: 1415, cores: 1)
+spawned uWSGI worker 4 (pid: 1416, cores: 1)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>此时，运行<code>ps aux | grep uwsgi</code>可查看到正在运行的uwsgi实例</p>
+<h5 id="4-5管理"><a href="#4-5管理" class="headerlink" title="4.5管理"></a>4.5管理</h5><p>倘若不撰写管理脚本 需要重启uwsgi时总是需要</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">ps</span> <span class="token parameter variable">-ax</span> <span class="token operator">|</span> <span class="token function">grep</span> uwsgi
+$ <span class="token function">kill</span> <span class="token parameter variable">-9</span> <span class="token punctuation">[</span>pid<span class="token punctuation">]</span>
+$ uwsgi <span class="token parameter variable">--ini</span> myproject.ini<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>但是如果你按照第二步创建了uwsgi目录及相关文件，你就可以优雅地管理uwsgi进程。</p>
+<h6 id="4-5-1安装uwsgitop"><a href="#4-5-1安装uwsgitop" class="headerlink" title="4.5.1安装uwsgitop"></a>4.5.1安装uwsgitop</h6><p>uwsgitop是一款界面类似top的工具，用以查看指定uwsgi的全部工作进程情况。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip3 <span class="token function">install</span> uwsgitop<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h6 id="4-5-2管理相关命令"><a href="#4-5-2管理相关命令" class="headerlink" title="4.5.2管理相关命令"></a>4.5.2管理相关命令</h6><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#重启uwsgi(常常出错 还是执行stop以后start效率高)</span>
+uwsgi <span class="token parameter variable">--reload</span> uwsgi/uwsgi.pid
+<span class="token comment">#终止uwsgi(原理是启动uwsgi进程时会把pid写入该文件)</span>
+uwsgi <span class="token parameter variable">--stop</span> uwsgi/uwsgi.pid
+<span class="token comment">#查看uwsgi各进程工作状况</span>
+uwsgitop uwsgi/uwsgi.status
+<span class="token comment">#追踪uwsgi日志及动态刷新当前访问记录</span>
+<span class="token function">tail</span> <span class="token parameter variable">-f</span> uwsgi/uwsgi.log
+<span class="token comment">#启动uwsgi</span>
+uwsgi <span class="token parameter variable">--ini</span> myproject.ini<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>如果不便记忆，可将上述命令写入sh脚本文件 快捷执行。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> uwsgi
+<span class="token builtin class-name">echo</span> <span class="token string">"uwsgi --ini ../myproject.ini"</span> <span class="token operator">></span>start.sh
+<span class="token builtin class-name">echo</span> <span class="token string">"uwsgi --stop uwsgi.pid"</span> <span class="token operator">></span>stop.sh
+<span class="token builtin class-name">echo</span> <span class="token string">"uwsgitop uwsgi.status"</span> <span class="token operator">></span>status.sh
+<span class="token builtin class-name">echo</span> <span class="token string">"tail -f uwsgi.log"</span><span class="token operator">></span>log.sh
+<span class="token function">chmod</span> +x *.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>可在浏览器访问项目地址,测试效果。</p>
+<p>综上，笔者整理了自己部署环境的全过程，希望能够对读者有所帮助。后续如有其他内容，将继续补丁修正。欢迎评论指正！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BB%8F%E9%AA%8C%E6%95%B4%E7%90%86/" class="category-chain-item">经验整理</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Django/">#Django</a>
+      
+        <a href="/tags/CentOS8/">#CentOS8</a>
+      
+        <a href="/tags/Nginx/">#Nginx</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CentOS8后端开发环境(LNMP)部署</div>
+      <div>http://example.com/posts/95e2d64f/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2020年2月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/posts/a584670/" title="CentOS8部署Cockpit">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CentOS8部署Cockpit</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/30e05259/" title="CentOS8使用yum与dnf出现缓存同步错误">
+                        <span class="hidden-mobile">CentOS8使用yum与dnf出现缓存同步错误</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>

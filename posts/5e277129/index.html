@@ -1,0 +1,914 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="笔者此前多适用pip-base环境来进行python相关开发工作，但在接触到数据科学和机器学习侧后，愈发认识到包版本控制(环境管理)和包依赖分析的重要性。故而转投Conda。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Anaconda 学习整理">
+<meta property="og:url" content="http://example.com/posts/5e277129/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="笔者此前多适用pip-base环境来进行python相关开发工作，但在接触到数据科学和机器学习侧后，愈发认识到包版本控制(环境管理)和包依赖分析的重要性。故而转投Conda。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/post/Anaconda.png">
+<meta property="article:published_time" content="2022-03-02T08:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-30T12:19:46.000Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Anaconda">
+<meta property="article:tag" content="Conda">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/post/Anaconda.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Anaconda 学习整理 - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Anaconda 学习整理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-02 16:00" pubdate>
+          2022年3月2日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：6.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Anaconda 学习整理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>写在开篇，本文内容基于Windows平台，仅供日常使用参考，若您希望进行系统化的Anaconda学习请移步<a target="_blank" rel="noopener" href="https://docs.conda.io/">官方文档</a>。</p>
+<p>如果您机器的环境已经紊乱，建议：</p>
+<ul>
+<li><p>对本机上各版本的python、Anaconda进行一次完全卸载；推荐采用强力的卸载工具Geek。在geek中搜索python和Anaconda，右键卸载即可。geek下载链接在这里：<a target="_blank" rel="noopener" href="https://geekuninstaller.com/">https://geekuninstaller.com/</a></p>
+</li>
+<li><p>仔细检查环境变量中 <strong>用户变量</strong>及<strong>系统变量</strong>中的<strong>path</strong>变量，将其中所有包含“python”、“anaconda”的变量全部删除。</p>
+<p>完成后，确保在命令提示窗执行python、pip及conda均是未找到命令。</p>
+</li>
+<li><p>重启计算机后，开始按照如下指导进行环境的重新搭建工作。</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="1-Anaconda安装"><a href="#1-Anaconda安装" class="headerlink" title="1. Anaconda安装"></a>1. Anaconda安装</h2><blockquote>
+<p><strong>Anaconda</strong> Individual Edition is a <strong>Python&#x2F;R</strong> data science distribution and a <strong>collection</strong> of over 7,500+ <strong>open-source packages</strong>, which includes <strong>a package and environment manager</strong>.</p>
+<p>Anaconda(个人版)是一个 python&#x2F;R的数据科学发行版本，它涵盖了超过7500个开源包，其中包括了包管理器和环境管理器。</p>
+<p>通常情况下，在windows上我们单独安装Anaconda即可，无需通过官源额外安装python。最佳策略是<strong>仅仅安装包含最常用python版本的Anaconda，其余版本python使用环境管理。</strong></p>
+<p><strong>注意：</strong>Anaconda包含的解释器只是针对base环境下而言的，虚拟环境不受限制。换言之，包含python3.7的Anaconda也可以创建python3.9的虚拟环境~</p>
+</blockquote>
+<p>出于一定考量，我选择了<strong>包含python3.7解释器的Anaconda3-5.3.0</strong>。各版本的Anaconda安装包我们可以在国内源站找到，笔者用了清华镜像站。也可以在官方下载列表中找到Anaconda-python对应关系及历史版本下载。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.anaconda.com/anaconda/packages/oldpkglists/">Anaconda官方站</a></li>
+<li><a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/">Anaconda清华镜像站</a></li>
+</ul>
+<p>下载好后进行安装，注意如下几点：</p>
+<ul>
+<li>安装位置尽量选在有一定空间(不小于30G保留空间)的磁盘中(不太建议在C盘，因为windows系统中<strong>Conda的base环境以及默认新建环境</strong>都是在安装目录下存放)；安装目录中最好不要出现中文以及空格。</li>
+<li>勾选将Anaconda加入环境变量、注册Anaconda为默认的python解释环境。</li>
+</ul>
+<p>等待安装完成后，我们可以在命令窗口中输入如下命令进行相关性安装结果检测。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python <span class="token parameter variable">--version</span>       <span class="token comment">#检测python是否加入环境变量 </span>
+conda <span class="token parameter variable">-V</span>       <span class="token comment">#检测conda是否正常   </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>此处额外介绍一个检查conda中是否安装某包的命令：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda list 包名$<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>例如：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda list Spyder$
+conda list jupyter$<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>不指定包名将列出当前conda的全部包。</p>
+<h2 id="2-Conda环境管理"><a href="#2-Conda环境管理" class="headerlink" title="2.Conda环境管理"></a>2.Conda环境管理</h2><blockquote>
+<p>这里笔者希望能谈一谈为什么我们要使用anaconda。大多数情况下，似乎电脑上的python-base环境加一个pip几乎能解决所有问题；但对于面向机器学习、大数据方向的开发及科研人员而言，他们往往会面对复杂的包环境，多个项目对同一个包的版本要求可能存在很大差异(特别是一些图形处理类的包)，一个包的失配带来一个项目瘫痪的连锁反应并不是玩笑之谈。另一方面，我们可能有使用多版本python的需求，如果在一台电脑安装多个解释器，有可能引入一些混乱因素，破坏已有环境。</p>
+<p>因此，我们建议用户养成环境管理的良好习惯。而Anaconda恰好提供了这一功能，你尽可能地为每一个项目都建立独立的环境(当然在熟悉以后你可以按照包的类型和版本建立属于自己的环境template)，它可以是不同的python解释器环境，也可以是不同的包环境(不同版本、不同类型)，且不同环境间各自互不干扰。</p>
+<p>诚然，在开始使用多环境管理时，你会感到非常糟糕，特别是对于长期使用windows的用户而言(Linux多用户情形是天然的环境管理)，但请坚信养成这样的习惯将会使你在从事复杂工作时受益匪浅，更有可能在未来某次任务中为你带来“救赎”，Anaconda不会辜负你。</p>
+</blockquote>
+<h3 id="2-0基础环境-base-x2F-root"><a href="#2-0基础环境-base-x2F-root" class="headerlink" title="2.0基础环境(base&#x2F;root)"></a>2.0基础环境(base&#x2F;root)</h3><p>进入正文，我们打开命令提示窗，首先查看当前的conda 环境。默认情况下，您只有一个root环境，也就是我们最基础的python-base环境，在不激活其他环境的情况下，您的任何操作都将应用到该环境中。另外，您可以看到在环境名后有一个<strong>星号</strong>，星号指定了您当前处于哪一个环境中。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">env</span> list<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>此外，您也可以使用下述官方推荐命令查看环境:</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda info <span class="token parameter variable">--envs</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h3 id="2-1创建环境"><a href="#2-1创建环境" class="headerlink" title="2.1创建环境"></a>2.1创建环境</h3><p>命令<code>conda create</code>可以创建环境。</p>
+<h4 id="2-1-1-指定环境名创建-最简方式"><a href="#2-1-1-指定环境名创建-最简方式" class="headerlink" title="2.1.1 指定环境名创建(最简方式)"></a>2.1.1 指定环境名创建(最简方式)</h4><p>我们来创建第一个环境，<code>-n</code>或<code>--name</code>可以指定环境名，这里环境名(英文)尽量贴合项目内容或者主要包的版本。诸如(t1100k224 表示该环境中tensorflow是1.10.0 keras是2.2.4)。起名法则千万条，自己看懂第一条。 可能会提示您确认新增包，按y 回车即可。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tk11 <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>创建好环境后，如果您可以通过<code>conda env  list</code>看到您刚才创建的环境，我们通过以下命令激活环境。环境激活后，您可以看到命令提示符最左侧将出现(环境名)，表示您当前的包操作及代码运行环境都将基于该环境。</p>
+<h4 id="2-1-2指定名字与py版本-最常用方式"><a href="#2-1-2指定名字与py版本-最常用方式" class="headerlink" title="2.1.2指定名字与py版本(最常用方式)"></a>2.1.2指定名字与py版本(最常用方式)</h4><p>我们来创建一个包含3.7.0解释器的环境，这也是通常意义上最常用的方式。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tk11 <span class="token assign-left variable">python</span><span class="token operator">=</span><span class="token number">3.7</span>.0<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>通常情况下，如果不指定pytohn的版本，将默认”克隆”一个base环境，指定后则是为您创建一个全新的基于该版本python的最简环境。</p>
+<h4 id="2-1-3-指定环境完整路径-最省空间方式"><a href="#2-1-3-指定环境完整路径-最省空间方式" class="headerlink" title="2.1.3 指定环境完整路径(最省空间方式)"></a>2.1.3 指定环境完整路径(最省空间方式)</h4><p>我们可以使用<code>-p</code>或<code>--prefix</code>指定环境存放的完整路径。笔者习惯在空间富足的盘中建立一个专用目录统一存放环境，以<code>python版本\环境名</code>作子目录规划。</p>
+<p>下面命令将创建环境，并指定环境的存放目录是<code>D:\AnaEnv\3.7\tk11</code>，该环境<strong>没有“名字”</strong>，此后匹配该环境的操作(例如：激活、删除环境)都<strong>需要使用完整路径</strong>。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-p</span> D:<span class="token punctuation">\</span>AnaEnv<span class="token punctuation">\</span><span class="token number">3.7</span><span class="token punctuation">\</span>tk11   <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p><strong>特别注意：</strong></p>
+<ul>
+<li>官方手册中提及<code>This command requires either the -n NAME or -p PREFIX option.</code>，即<code>conda create</code><strong>必须指定</strong><code>-n</code>环境名或<code>-p</code>存放位置，且<strong>二者不能同时存在</strong>。</li>
+<li>二者差异：<code>-n</code>在Anaconda安装目录下的envs目录中创建与环境同名的目录，来存放该环境，匹配环境时用户使用环境名，Anaconda将在<code>安装目录\envs\</code>下匹配环境；而<code>-p</code>则是由用户指定环境的完整位置，匹配环境时用户需要指定完整的环境位置。</li>
+<li>疑惑：官方何不指定一种同时设置环境名和存放位置的命令模式？</li>
+</ul>
+<h4 id="2-1-4克隆本地环境"><a href="#2-1-4克隆本地环境" class="headerlink" title="2.1.4克隆本地环境"></a>2.1.4克隆本地环境</h4><p>我们可以使用<code>--clone</code>来创建一个新环境，并且克隆某个本地环境的配置。该参后接环境名或环境完整路径。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tk11Sub <span class="token parameter variable">--clone</span> D:<span class="token punctuation">\</span>AnaEnv<span class="token punctuation">\</span><span class="token number">3.7</span><span class="token punctuation">\</span>tk11  
+conda create <span class="token parameter variable">-n</span> tk11Sub <span class="token parameter variable">--clone</span> tk11   <span class="token comment">#等同于指定 安装目录\envs\tk11</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<h4 id="2-1-5从文件中创建"><a href="#2-1-5从文件中创建" class="headerlink" title="2.1.5从文件中创建"></a>2.1.5从文件中创建</h4><p>如果您使用过<code>pip install -r requirements.txt</code>，那这一方式您应该较为熟悉。我们可以使用–file 来指定从他人共享的环境文件读取配置，创建环境。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> <span class="token builtin class-name">test</span> <span class="token parameter variable">--file</span> env.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>创建环境文件的方式也很简单，考虑到windows文件可读性建议您创建为yml(实际上后缀名随意)：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">env</span> <span class="token builtin class-name">export</span> <span class="token operator">></span> 环境文件名.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>让我们来看下环境文件的简易版格式：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">name</span><span class="token punctuation">:</span> myConda <span class="token comment">#环境名</span>
+<span class="token key atrule">channels</span><span class="token punctuation">:</span>   <span class="token comment">#镜像源 </span>
+  <span class="token punctuation">-</span> defaults  
+<span class="token key atrule">dependencies</span><span class="token punctuation">:</span> <span class="token comment">#环境中安装的包</span>
+  <span class="token punctuation">-</span> alabaster=0.7.12=pyhd3eb1b0_0  <span class="token comment">#通过conda安装的包</span>
+  <span class="token punctuation">-</span> appdirs=1.4.4=pyhd3eb1b0_0
+  <span class="token punctuation">...</span><span class="token punctuation">...</span>
+  <span class="token punctuation">-</span> <span class="token key atrule">pip</span><span class="token punctuation">:</span>          <span class="token comment">#通过pip安装的包</span>
+    <span class="token punctuation">-</span> absl<span class="token punctuation">-</span>py==1.0.0
+    <span class="token punctuation">-</span> aiohttp==3.8.1
+    <span class="token punctuation">...</span><span class="token punctuation">...</span>
+<span class="token key atrule">prefix</span><span class="token punctuation">:</span> C<span class="token punctuation">:</span>\Anaconda\envs\myConda  <span class="token comment">#环境路径</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>熟悉格式之后，我们可以自己修改或编写对应的文件，也就是常说的<strong>环境模板</strong>(<strong>Environment Template</strong>)。</p>
+<h4 id="2-1-6指定包创建"><a href="#2-1-6指定包创建" class="headerlink" title="2.1.6指定包创建"></a>2.1.6指定包创建</h4><p>结合官方手册，笔者将命令<code>conda create</code>归纳为携带两类参数：命名参数(<strong>Named Arguments</strong>)与位置参数(<strong>Positional Arguments</strong>)。</p>
+<ul>
+<li><p>命名参数，即需要指定名字的参数。诸如我们的<code>-n</code> <code>-p</code>，此处补充一个常识：<code>-</code>后跟的参数名是<strong>单字母简称</strong>，<code>--</code>后跟的是长参名(或是完整参数名)。而有些参数名既有简称也有长参，就像<code>-n</code> <code>--name</code>或<code>-p</code> <code>--prefix</code>。</p>
+</li>
+<li><p>位置参数只有一个 <strong>package_spec</strong>,即不需要名字的参数，但在位置上有要求，对于本条命令，<strong>您务必保证package_spec 连贯出现</strong>，我们建议您在命令末端使用该参数。本参数特指您在该环境新建时希望加入的包(还可指定包的等级，类比安装包)，我们此前的<code>python=3.7.0</code>就是用例。下面将创建一个包含python3.6和reuquests的抓包环境：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> catchPack <span class="token assign-left variable">python</span><span class="token operator">=</span><span class="token number">3.6</span>.1 requests<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure></li>
+</ul>
+<h3 id="2-2-删除环境"><a href="#2-2-删除环境" class="headerlink" title="2.2 删除环境 "></a>2.2 删除环境<span id="del"> </span></h3><p>目前conda并未提供环境删除的专用命令，我们多通过包删除命令来完成。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda remove <span class="token parameter variable">-n</span> 环境名 <span class="token parameter variable">--all</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h3 id="2-3-激活与退出环境"><a href="#2-3-激活与退出环境" class="headerlink" title="2.3 激活与退出环境"></a>2.3 激活与退出环境</h3><p>环境激活：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">activate tk11                 <span class="token comment">#环境名</span>
+activate D:<span class="token punctuation">\</span>AnaEnv<span class="token punctuation">\</span><span class="token number">3.8</span><span class="token punctuation">\</span>tk12   <span class="token comment">#完整路径</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>环境退出(在当前环境中)：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">deactivate           <span class="token comment">#退出当前环境 返回上一层</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h3 id="2-4-更多学习"><a href="#2-4-更多学习" class="headerlink" title="2.4 更多学习"></a>2.4 更多学习</h3><p>我推荐您通过以下方式(同其他命令)进行<code>conda</code>的个性化学习：</p>
+<ul>
+<li>您可以使用 <code>-h</code>来便捷查看某命令的其他用法。</li>
+<li>您可以访问官方手册的<a target="_blank" rel="noopener" href="https://docs.conda.io/projects/conda/en/latest/commands.html">Command Reference</a>来更友好地学习conda。</li>
+</ul>
+<h2 id="3-Conda-包管理"><a href="#3-Conda-包管理" class="headerlink" title="3.Conda 包管理"></a>3.Conda 包管理</h2><h3 id="3-0-pip与conda区别"><a href="#3-0-pip与conda区别" class="headerlink" title="3.0 pip与conda区别"></a>3.0 pip与conda区别</h3><blockquote>
+<p>介绍包管理，就绕不开官方包管理器pip与(强大)conda的区别，笔者结合查询所得，做了一些<del>归纳</del>搬用，如果您希望获得更原汁原味的讲解，强烈安利<a target="_blank" rel="noopener" href="https://www.anaconda.com/blog/understanding-conda-and-pip">官方答疑</a>！</p>
+</blockquote>
+<p>conda和pip尽管在功能上有重叠，但这两款工具是出于不同目的设计的。</p>
+<ul>
+<li>pip是<a target="_blank" rel="noopener" href="https://www.pypa.io/en/latest/">Python Packaging Authority (PyPA)</a>团队推荐的用于从<a target="_blank" rel="noopener" href="https://pypi.org/">Python Package Index (PyPI)</a>安装包的工具。<ul>
+<li>pip安装的是wheels文件或者源码形式的python软件包，安装源码包时需要配套的编译器(有的还需要一些库)辅助pip完成安装；通常在使用pip前我们需先安装python解释器。</li>
+<li>pip没有内置环境管理，必须依赖<a target="_blank" rel="noopener" href="https://virtualenv.pypa.io/en/latest/">virtualenv</a>或<a target="_blank" rel="noopener" href="https://docs.python.org/3/library/venv.html">venv</a>等其他工具来创建隔离环境。 <a target="_blank" rel="noopener" href="https://pipenv.readthedocs.io/en/latest/">pipenv</a>, <a target="_blank" rel="noopener" href="https://poetry.eustace.io/">poetry</a>和<a target="_blank" rel="noopener" href="https://github.com/ofek/hatch">hatch</a>等工具将pip和virtualenv封装起来提供了统一的包管理和环境管理功能。</li>
+<li>pip以递归、串行循环的方式安装依赖项，无法确保所有包同时满足依赖，特别当前后安装的包存在版本不相容的依赖时，环境可能会被破坏。</li>
+</ul>
+</li>
+<li>conda是跨平台的包和环境管理器，可以安装和管理来自<a target="_blank" rel="noopener" href="https://repo.anaconda.com/">Anaconda repository</a>和<a target="_blank" rel="noopener" href="https://anaconda.org/">Anaconda Cloud</a>的conda包。<ul>
+<li>conda包是二进制文件，无需编译器支持，conda可以直接安装Python包以及Python解释器。conda安装包可能包含用其他语言编写的软件的包，包括但不限于C或C ++库，R包或其他软件。</li>
+<li>conda能够创建可以包含不同版本的Python或其他软件包的隔离环境。</li>
+<li>conda在安装包时采用了一个可满足性(SAT) 求解器来检查当前环境中安装的全部包的全部依赖是否能够满足，这一过程会耗费额外的时间，但能保护环境免遭破坏。</li>
+</ul>
+</li>
+<li>Anaconda则将pip和conda结合起来用以创建数据科学环境。主要原因是：有相当一部分包只在PyPI上分发，只能通过pip来安装。Anaconda仓库中涵盖1500多个软件包加上第三方Anaconda Cloud(主要是<a target="_blank" rel="noopener" href="https://conda-forge.org/">conda-forge</a> 和<a target="_blank" rel="noopener" href="https://bioconda.github.io/">bioconda</a>)中提供的数千个软件包，相比于PyPI上 150,000多个软件包仍然是相形见绌。</li>
+</ul>
+<p>更形象简洁的表述，笔者建议您移步<a target="_blank" rel="noopener" href="https://www.anaconda.com/blog/understanding-conda-and-pip">官方答疑</a>。</p>
+<h3 id="3-1包安装"><a href="#3-1包安装" class="headerlink" title="3.1包安装"></a>3.1包安装</h3><h4 id="3-1-1-常规安装"><a href="#3-1-1-常规安装" class="headerlink" title="3.1.1 常规安装"></a>3.1.1 常规安装</h4><p><code>conda install</code>用来安装一系列包到指定环境中，多个包之间以空格间隔，可以只指定包名，也可以<code>像bitarry=0.8</code>一样同时指定包名和版本。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">install</span> keras tensorflow <span class="token assign-left variable">bitarry</span><span class="token operator">=</span><span class="token number">0.8</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h4 id="3-1-2-本地安装"><a href="#3-1-2-本地安装" class="headerlink" title="3.1.2 本地安装"></a>3.1.2 本地安装</h4><p>若您本地存在conda的二进制包，可以之间通过<code>conda install</code>安装，但这种安装不会检测依赖关系，也不应同常规方式混用在一条命令中。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">install</span> lxml-3.2.0-py27_0.tar.bz2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h4 id="3-1-3-从文件中安装"><a href="#3-1-3-从文件中安装" class="headerlink" title="3.1.3 从文件中安装"></a>3.1.3 从文件中安装</h4><p>类似于<code>pip install -r requirements.txt</code>，conda也提供从文件中读取包名和版本进行安装。文件格式与<code>pip</code>所用的requirements.txt相同。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">install</span> <span class="token parameter variable">-f</span> requirements.txt <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h4 id="3-1-4-版本回退式安装"><a href="#3-1-4-版本回退式安装" class="headerlink" title="3.1.4 版本回退式安装"></a>3.1.4 版本回退式安装</h4><p>使得当前环境的包组回退到上一版本，详细请参照 <a href="#rev">2.3.4 包回退</a>。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda <span class="token function">install</span> <span class="token parameter variable">--rev</span>  <span class="token number">5</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>需要注意：</p>
+<ul>
+<li>安装包时，conda会安装指定包及其依赖依赖包，安装前会对所安装的全部包进行环境兼容性检测，无法通过兼容性检测时会报错，不会改变当前环境。</li>
+<li>在不指定包版本时，conda会试图安装最新版的包，为了匹配最新版软件包，conda可能会安装额外的包、甚至<strong>对已安装的包进行更新、升级</strong>。我们可以通过<code>--freeze-installed</code>参数来强制conda在<strong>不更新</strong>当前已安装包的情况下，选择稍旧的包进行安装。</li>
+<li>如果您觉得conda的依赖检测过于耗时，可以使用<code>--no-deps</code>跳过检测(不推荐)。</li>
+</ul>
+<h3 id="3-2-包卸载"><a href="#3-2-包卸载" class="headerlink" title="3.2 包卸载"></a>3.2 包卸载</h3><p>在Anaconda中，无论用户处于何种环境下，只要通过<code>conda install</code>安装的包都会存放在Anaconda主目录的<code>pkgs</code>目录下。当某一环境中需要安装某包时，Anaconda会首先检查pkgs目录，若目录中已存在所需包，则可以直接将该包拷贝到新环境中。</p>
+<blockquote>
+<p>上述拷贝的实际过程：将<code>Anaconda\pkgs\包名\Lib\site-packages</code>下的内容拷贝到<code>Anaconda\envs\环境名\Lib\site-packages</code>目录下。</p>
+</blockquote>
+<h4 id="3-2-1-从环境中删除"><a href="#3-2-1-从环境中删除" class="headerlink" title="3.2.1 从环境中删除"></a>3.2.1 从环境中删除</h4><p>使用 <code>conda remove</code>来卸载环境中的一系列包，可使用<code>-n 环境名</code>或<code>-p 环境路径</code>来指定环境，您也可以使用– all参数来卸载指定环境中的全部包，详见<a href="#del">环境删除</a>。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">conda remove -n tkEnv  numpy <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>需要注意：</p>
+<ul>
+<li>卸载包时，<code>conda remove</code>只会删除该环境下的包，而不会影响<code>pkgs</code>目录下的包。若另一环境要安装该包，仍会优先从<code>pkgs</code>中拷贝。</li>
+<li>与安装相对应的，<code>conda remove</code>会从环境中删除指定包及依赖该包的全部包。换言之，删除包时请务必谨慎检查conda给出的删除列表，以免重要包被卸载。如果希望跳过依赖检测，只删除指定包，可以使用 <code>--force</code>，但会破坏当前环境(不推荐)。</li>
+</ul>
+<p>[存疑：在base环境删除包会如何….]</p>
+<h4 id="3-2-2-从主机上删除"><a href="#3-2-2-从主机上删除" class="headerlink" title="3.2.2 从主机上删除"></a>3.2.2 从主机上删除</h4><p>若要彻底从主机上删除某包，需要使用<code>conda clean</code>命令来清除<code>Anaconda\pkgs</code>中的内容。</p>
+<h3 id="3-3-包搜索"><a href="#3-3-包搜索" class="headerlink" title="3.3 包搜索"></a>3.3 包搜索</h3><h3 id="3-4-包更新"><a href="#3-4-包更新" class="headerlink" title="3.4 包更新"></a>3.4 包更新</h3><h3 id="3-5-包回退"><a href="#3-5-包回退" class="headerlink" title="3.5 包回退  "></a>3.5 包回退 <span id="rev"> </span></h3><section class="footnotes"><div class="footnote-list"><ol><li><span id="fn:1" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://docs.anaconda.com/">Anaconda官方文档</a>
+<a href="#fnref:1" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:2" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://docs.conda.io/en/latest/">Conda官方文档</a>
+<a href="#fnref:2" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:3" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://baike.baidu.com/item/anaconda/20407441">Anaconda百度百科</a>
+<a href="#fnref:3" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:4" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://www.anaconda.com/blog/understanding-conda-and-pip">conda社区：理解conda与pip</a>
+<a href="#fnref:4" rev="footnote" class="footnote-backref"> ↩</a></span></span></li><li><span id="fn:5" class="footnote-text"><span><a target="_blank" rel="noopener" href="https://blog.csdn.net/FrankieHello/article/details/106083428">CSDN conda和pip安装库之间的区别</a>
+<a href="#fnref:5" rev="footnote" class="footnote-backref"> ↩</a></span></span></li></ol></div></section>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Anaconda/">#Anaconda</a>
+      
+        <a href="/tags/Conda/">#Conda</a>
+      
+        <a href="/tags/Python/">#Python</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Anaconda 学习整理</div>
+      <div>http://example.com/posts/5e277129/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/posts/bfd9c6dc/" title="记博客迁移">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">记博客迁移</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/5b46bc6/" title="Tensorflow前置知识之GPU篇">
+                        <span class="hidden-mobile">Tensorflow前置知识之GPU篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>

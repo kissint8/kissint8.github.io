@@ -1,0 +1,933 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="笔者在CentOS7.3上部署一套后端管理生产环境(LAMP+Django)的记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS7后端开发环境(LAMP)部署">
+<meta property="og:url" content="http://example.com/posts/3b61517d/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="笔者在CentOS7.3上部署一套后端管理生产环境(LAMP+Django)的记录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/post/apacheServer.jpg">
+<meta property="article:published_time" content="2018-09-10T02:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-25T06:43:59.000Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Django">
+<meta property="article:tag" content="CentOS7">
+<meta property="article:tag" content="Apache">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/img/post/apacheServer.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>CentOS7后端开发环境(LAMP)部署 - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CentOS7后端开发环境(LAMP)部署"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2018-09-10 10:00" pubdate>
+          2018年9月10日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：7.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：59 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CentOS7后端开发环境(LAMP)部署</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>以下博文记录为2018年 部分内容或老旧 仅供参考<br>接下来是笔者根据自己经历整理的从零开始在CentOs7.3上搭建环境（实测在腾讯云  阿里云主机上无误）<br>我们所采用的是如下配置：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">Apache2.4 + MySQL5.7+PHP7.1+phpMyAdmin4.8+python3.6(pip3) +MOD_WSGI4.5+Django2.x<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h2 id="Apache"><a href="#Apache" class="headerlink" title="Apache"></a>Apache</h2><h5 id="1-安装apache2-4及其扩增包"><a href="#1-安装apache2-4及其扩增包" class="headerlink" title="1.安装apache2.4及其扩增包"></a>1.安装apache2.4及其扩增包</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> httpd httpd-dev<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="2-配置servername"><a href="#2-配置servername" class="headerlink" title="2.配置servername"></a>2.配置servername</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vi</span> /etc/httpd/conf/httpd.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>修改ServerName如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-inline property">ServerName</span> localhost:80<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="3-启动apache-并设置开机启动"><a href="#3-启动apache-并设置开机启动" class="headerlink" title="3.启动apache 并设置开机启动"></a>3.启动apache 并设置开机启动</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl start httpd
+<span class="token function">chkconfig</span> httpd on<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="4-访问主机地址"><a href="#4-访问主机地址" class="headerlink" title="4.访问主机地址"></a>4.访问主机地址</h5><p>看一下是否运行正确（出现Test123..欢迎页面说明正确了）</p>
+<h5 id="5-防目录泄露"><a href="#5-防目录泄露" class="headerlink" title="5.防目录泄露"></a>5.防目录泄露</h5><p>我们通常不希望自己的网站目录轻易被访问者看到或被有心人爆出。而apache默认配置中，只要没有index，就会显示网站目录，这一点我们要做一定修改<br>需要将以下内容：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Directory</span><span class="token directive-block-parameter attr-value"> /var/www/</span><span class="token punctuation">></span></span>
+<span class="token directive-inline property">Options</span> Indexes FollowSymLinks
+<span class="token directive-inline property">AllowOverride</span> None
+<span class="token directive-inline property">Require</span> all granted
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Directory</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p><strong>修改为</strong>：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Directory</span><span class="token directive-block-parameter attr-value"> /var/www/</span><span class="token punctuation">></span></span>
+<span class="token directive-inline property">Options</span> FollowSymLinks
+<span class="token directive-inline property">AllowOverride</span> None
+<span class="token directive-inline property">Require</span> all granted
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Directory</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="MYSQL"><a href="#MYSQL" class="headerlink" title="MYSQL"></a>MYSQL</h2><h5 id="1-安装MySQL源"><a href="#1-安装MySQL源" class="headerlink" title="1.安装MySQL源"></a>1.安装MySQL源</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum localinstall http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="2-安装MySQL"><a href="#2-安装MySQL" class="headerlink" title="2.安装MySQL"></a>2.安装MySQL</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> mysql-community-server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="3-启动MySQL"><a href="#3-启动MySQL" class="headerlink" title="3.启动MySQL"></a>3.启动MySQL</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl start mysqld<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="4-获取密码"><a href="#4-获取密码" class="headerlink" title="4.获取密码"></a>4.获取密码</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">grep</span> <span class="token string">'temporary password'</span> /var/log/mysqld.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>你会得到这行 A temporary password is generated for root@localhost: Jqqskhz1Wr(?<br>冒号后面的就是密码</p>
+<h5 id="5-进入MySQL"><a href="#5-进入MySQL" class="headerlink" title="5.进入MySQL"></a>5.进入MySQL</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql <span class="token parameter variable">-uroot</span> <span class="token parameter variable">-p</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>输入你刚才获得的密码，你会进入mysql&gt;。</p>
+<h5 id="6-修改密码"><a href="#6-修改密码" class="headerlink" title="6.修改密码"></a>6.修改密码</h5><p>星号为你输入的密码，不要丢了引号，密码建议大小写加数字加特殊字符，太简单的密码会被拒绝</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">ALTER</span> <span class="token keyword">USER</span> <span class="token string">'root'</span><span class="token variable">@'localhost'</span> IDENTIFIED <span class="token keyword">BY</span> <span class="token string">'*************'</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="7-开放远程访问权限"><a href="#7-开放远程访问权限" class="headerlink" title="7.开放远程访问权限"></a>7.开放远程访问权限</h5><figure><div class="code-wrapper"><pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">use</span> mysql<span class="token punctuation">;</span>
+<span class="token keyword">update</span> <span class="token keyword">user</span> <span class="token keyword">set</span> host <span class="token operator">=</span> <span class="token string">'%'</span> <span class="token keyword">where</span> <span class="token keyword">user</span> <span class="token operator">=</span> <span class="token string">'root'</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>百分号相当于*号，意为全部放行，也可改为IP地址则只允许此IP连接，也可以设置为192.168.%.%或者192.168.0.1&#x2F;9代表允许一个ip段进行连接，也可以多加几条数据设置不同ip允许连接。</p>
+<h2 id="PHP及关联配置"><a href="#PHP及关联配置" class="headerlink" title="PHP及关联配置"></a>PHP及关联配置</h2><h5 id="1-进入-x2F-usr-x2F-local文件夹"><a href="#1-进入-x2F-usr-x2F-local文件夹" class="headerlink" title="1.进入 &#x2F;usr&#x2F;local文件夹"></a>1.进入 &#x2F;usr&#x2F;local文件夹</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> /usr/local<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="2-下载php7-1-2"><a href="#2-下载php7-1-2" class="headerlink" title="2.下载php7.1.2"></a>2.下载php7.1.2</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> am1.php.net/get/php-7.1.20.tar.gz/from/this/mirror<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="3-解压下载的安装包"><a href="#3-解压下载的安装包" class="headerlink" title="3.解压下载的安装包"></a>3.解压下载的安装包</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">tar</span> <span class="token parameter variable">-zxvf</span> 包名
+<span class="token builtin class-name">cd</span> 解压后的目录<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="4-安装必要的依赖（很重要）"><a href="#4-安装必要的依赖（很重要）" class="headerlink" title="4.安装必要的依赖（很重要）"></a>4.安装必要的依赖（很重要）</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token parameter variable">-y</span> <span class="token function">install</span> libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel zlib zlib-devel <span class="token function">curl</span> curl-devel openssl openssl-devel<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="5-安装gcc（如果你希望之后的编译源码顺利进行的话）"><a href="#5-安装gcc（如果你希望之后的编译源码顺利进行的话）" class="headerlink" title="5.安装gcc（如果你希望之后的编译源码顺利进行的话）"></a>5.安装gcc（如果你希望之后的编译源码顺利进行的话）</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> gcc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="6-安装必要扩展"><a href="#6-安装必要扩展" class="headerlink" title="6.安装必要扩展"></a>6.安装必要扩展</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token parameter variable">-y</span> <span class="token function">install</span> libxslt-devel*
+yum <span class="token parameter variable">-y</span> <span class="token function">install</span> perl*
+yum <span class="token parameter variable">-y</span> <span class="token function">install</span> httpd-devel<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="7-安装状态测试"><a href="#7-安装状态测试" class="headerlink" title="7.安装状态测试"></a>7.安装状态测试</h5><p>如果 find &#x2F; -name apxs 得到的路径是:&#x2F;usr&#x2F;bin&#x2F;apxs 那么安装很顺利</p>
+<h5 id="8-编译前的配置"><a href="#8-编译前的配置" class="headerlink" title="8.编译前的配置"></a>8.编译前的配置</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span>/usr/local/php7 --with-curl --with-freetype-dir --with-gd --with-gettext --with-iconv-dir --with-kerberos --with-libdir<span class="token operator">=</span>lib64 --with-libxml-dir --with-mysqli --with-openssl --with-pcre-regex --with-pdo-mysql --with-pdo-sqlite --with-pear --with-png-dir --with-xmlrpc --with-xsl --with-zlib --enable-fpm --enable-bcmath -enable-inline-optimization --enable-gd-native-ttf --enable-mbregex --enable-mbstring --enable-opcache --enable-pcntl --enable-shmop --enable-soap --enable-sockets --enable-sysvsem --enable-xml --enable-zip --enable-pcntl --with-curl --with-fpm-user<span class="token operator">=</span>nginx --enable-ftp --enable-session --enable-xml --with-apxs2<span class="token operator">=</span>/usr/bin/apxs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="9-编译并安装"><a href="#9-编译并安装" class="headerlink" title="9.编译并安装"></a>9.编译并安装</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">make</span> <span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>编译出错请查看<a target="_blank" rel="noopener" href="http://www.cnblogs.com/sweetXiaoma/p/5855732.html">http://www.cnblogs.com/sweetXiaoma/p/5855732.html</a></p>
+<h5 id="10-添加环境变量"><a href="#10-添加环境变量" class="headerlink" title="10.添加环境变量"></a>10.添加环境变量</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vi</span> /etc/profile<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>在末尾加入</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token environment constant">$PATH</span>:/usr/local/php7/bin
+<span class="token builtin class-name">export</span> <span class="token environment constant">PATH</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<p>使改动生效</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">source</span> /etc/profile<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>查看php版本</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">php <span class="token parameter variable">-v</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="11-生成必要文件"><a href="#11-生成必要文件" class="headerlink" title="11.生成必要文件"></a>11.生成必要文件</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cp</span> php.ini-production /usr/local/php7/etc/php.ini
+<span class="token function">cp</span> sapi/fpm/php-fpm /usr/local/php7/etc/php-fpm
+<span class="token function">cp</span> /usr/local/php7/etc/php-fpm.conf.default /usr/local/php7/etc/php-fpm.conf
+<span class="token function">cp</span> /usr/local/php7/etc/php-fpm.d/www.conf.default /usr/local/php7/etc/php-fpm.d/www.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<h5 id="12-必要配置"><a href="#12-必要配置" class="headerlink" title="12.必要配置"></a>12.必要配置</h5><p>如果报错 请敲这行查报错信息 可以查到哪个文件第几行出错：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl status httpd.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>（1）修改Apache默认欢迎页：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/httpd/conf.d/welcome.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>将<code>/usr/share/httpd/noindex</code> 修改为<code>/var/www</code></p>
+<p>（2）修改Apache配置：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/httpd/conf/httpd.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>将<strong>DocumentRoot</strong>的值修改为<code>/var/www/</code>，并将此文件中的另一处<code>/var/www/html</code>也改成<code>/var/www</code>，这样我们就可以直接在<code>/var/www</code>下放置我们想要在apache上跑的文件啦！</p>
+<p>再在文件中找到如下内容：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-inline property">AddType</span> application/x-compress .Z
+<span class="token directive-inline property">AddType</span> application/x-gzip .gz .tgz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>在其后添加：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-inline property">AddType</span> application/x-httpd-php .php
+<span class="token directive-inline property">AddType</span> application/x-httpd-php-source .php7<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>（4）搜索 <code>IfModule dir_module</code>并在下面添加<code>index.php </code>（如下）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf">&lt; IfModule dir_module>
+<span class="token directive-inline property">DirectoryIndex</span> index.html index.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>（5）搜索下面这一行：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-inline property">LoadModule</span> php7_module modules/libphp7.so<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>如果没有请手动添加，缺失本行内容会出现无法运行php文件，php文件访问即下载。<br>（6）测试<br>在<code>\var\www</code>目录下创建打印php_info的主页。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">"&lt;?php phpinfo();?>"</span><span class="token operator">>></span>index.php<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>浏览器里输入 <code>主机地址/index.php</code><br>出现php7.1的配置信息说明一切就绪。</p>
+<h2 id="安装phpMyadmin"><a href="#安装phpMyadmin" class="headerlink" title="安装phpMyadmin"></a>安装phpMyadmin</h2><h5 id="1-下载软件包"><a href="#1-下载软件包" class="headerlink" title="1.下载软件包"></a>1.下载软件包</h5><p>下载最新版的phpmyadmin （如选用其他版本，可前往phpmyadmin官网查看）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> /var/www
+<span class="token function">wget</span> https://files.phpmyadmin.net/phpMyAdmin/4.8.2/phpMyAdmin-4.8.2-all-languages.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<p>解压</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">tar</span> vzxf 包名<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>修改解压后得到的文件夹名为phpmyadmin （为之后访问方便）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mv</span> 解压得到的文件夹/ phpmyadmin<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>进入文件夹 </p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> phpmyadmin<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h5 id="2-建立主配置文件"><a href="#2-建立主配置文件" class="headerlink" title="2.建立主配置文件"></a>2.建立主配置文件</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cp</span> config.sample.inc.php config.inc.php<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h5 id="3-修改配置文件"><a href="#3-修改配置文件" class="headerlink" title="3.修改配置文件"></a>3.修改配置文件</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> config.inc.php<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-php" data-language="php"><code class="language-php"><span class="token variable">$cfg</span><span class="token punctuation">[</span>‘blowfish_secret’<span class="token punctuation">]</span> <span class="token operator">=</span> ”<span class="token punctuation">;</span> <span class="token comment">/* 自己在引号里面随便填 */</span> 
+<span class="token variable">$cfg</span><span class="token punctuation">[</span>‘Servers’<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token variable">$i</span><span class="token punctuation">]</span><span class="token punctuation">[</span>‘host’<span class="token punctuation">]</span> <span class="token operator">=</span>‘<span class="token number">127.0</span><span class="token number">.0</span><span class="token number">.1</span>’  <span class="token comment">/*改成127.0.0.1*/</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<h5 id="4-启动httpd-mysqld服务"><a href="#4-启动httpd-mysqld服务" class="headerlink" title="4.启动httpd+mysqld服务"></a>4.启动httpd+mysqld服务</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">service</span> mysqld start
+<span class="token function">service</span> httpd restart<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<p>浏览器输入主机地址&#x2F;phpmyadmin 即可登录</p>
+<h2 id="安装python3-6及pip3"><a href="#安装python3-6及pip3" class="headerlink" title="安装python3.6及pip3"></a>安装python3.6及pip3</h2><h6 id="1-安装python3-6"><a href="#1-安装python3-6" class="headerlink" title="1.安装python3.6"></a>1.安装python3.6</h6><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> epel-release   <span class="token comment">#安装epel源</span>
+yum <span class="token function">install</span> python36 python36-devel<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<h5 id="2-软链接"><a href="#2-软链接" class="headerlink" title="2.软链接"></a>2.软链接</h5><p>一般来说，在&#x2F;usr&#x2F;bin 会有python3.6 这时我们可以设一个软链接给他</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">ln</span> <span class="token parameter variable">-s</span> /usr/bin/python3.6 python3 <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>这样我们一运行python3即可打开python3.6</p>
+<h5 id="3-安装3-6对应的pip3"><a href="#3-安装3-6对应的pip3" class="headerlink" title="3.安装3.6对应的pip3"></a>3.安装3.6对应的pip3</h5><p>（为防止后期pip安装时混乱，此处我们只安装pip3）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> python36-setuptools
+easy_install-3.6 pip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<h5 id="4-安装检测"><a href="#4-安装检测" class="headerlink" title="4.安装检测"></a>4.安装检测</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip3<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>出现各种参数说明安装成功<br>如果你还想安装pip可参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/zuolovefu/article/details/78142612">https://blog.csdn.net/zuolovefu/article/details/78142612</a></p>
+<h5 id="5-模块安装"><a href="#5-模块安装" class="headerlink" title="5.模块安装"></a>5.模块安装</h5><p>关于需要用到的各种python3模块（笔者的Django 项目会用到这些，大家根据自己的需求自行安装）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip3 <span class="token function">install</span> django
+pip3 <span class="token function">install</span> requests
+pip3 <span class="token function">install</span> bs4
+pip3 <span class="token function">install</span> lxml
+yum <span class="token function">install</span> mysql-devel
+pip3 <span class="token function">install</span> mysqlclient<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="安装并配置mod-wsgi"><a href="#安装并配置mod-wsgi" class="headerlink" title="安装并配置mod_wsgi"></a>安装并配置mod_wsgi</h2><h6 id="1-下载新版的wsgi"><a href="#1-下载新版的wsgi" class="headerlink" title="1.下载新版的wsgi"></a>1.下载新版的wsgi</h6><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> 进入根目录
+<span class="token function">wget</span> https://github.com/GrahamDumpleton/mod_wsgi/archive/develop.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<p>解压包并进入解压得到的文件夹</p>
+<h5 id="2-编译安装"><a href="#2-编译安装" class="headerlink" title="2.编译安装"></a>2.编译安装</h5><p>这一步configure很重要（它会列出一堆，看apxs gcc python等是否关联正确 不出现no的都是能关联到的。会有一部分是no不管他）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">./configure --with-python<span class="token operator">=</span>/usr/bin/python3.6 <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">make</span> <span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h5 id="3-在apache中加载模块"><a href="#3-在apache中加载模块" class="headerlink" title="3.在apache中加载模块"></a>3.在apache中加载模块</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/httpd/conf/httpd.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>在文件中加入：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf"><span class="token directive-inline property">LoadModule</span> wsgi_module /usr/lib64/httpd/modules/mod_wsgi.so<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>保存后重启Apache：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">apachectl restart<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<h2 id="关于在apache上配合mod-wsgi部署Django"><a href="#关于在apache上配合mod-wsgi部署Django" class="headerlink" title="关于在apache上配合mod_wsgi部署Django"></a>关于在apache上配合mod_wsgi部署Django</h2><h5 id="1-runserver-or-check"><a href="#1-runserver-or-check" class="headerlink" title="1.runserver or check"></a>1.runserver or check</h5><p>建议先在主机上通过runserver 或者check测试下django框架是否已经正确搭建、关联好了数据库并且本机不缺少依赖。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#开启8080端口 然后浏览器里 http://服务器公网ip:8080  把功能试一试</span>
+python3 manage.py runserver <span class="token number">0.0</span>.0.0:8080
+<span class="token comment">#或者check(但针对非语法错误不一定好使)</span>
+python3 manage.py check<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<h5 id="2-赋权限"><a href="#2-赋权限" class="headerlink" title="2.赋权限"></a>2.赋权限</h5><p>其次， 在工程文件夹外 将工程文件夹以及其子目录下文件赋予755权限：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> <span class="token parameter variable">-R</span> <span class="token number">755</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<h5 id="3-修改Django-x2F-wsgi-py"><a href="#3-修改Django-x2F-wsgi-py" class="headerlink" title="3.修改Django&#x2F;wsgi.py"></a>3.修改Django&#x2F;wsgi.py</h5><p>修改<code>wsgi.py </code>文件内容如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">import os
+from django.core.wsgi import get_wsgi_application
+from os.path import join, dirname, abspath
+PROJECT_DIR &#x3D; dirname(dirname(abspath(__file__)))
+import sys
+sys.path.insert(0, PROJECT_DIR)
+os.environ.setdefault(“DJANGO_SETTINGS_MODULE”, “first.settings”)
+application &#x3D; get_wsgi_application()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h5 id="4-修改apache配置文件"><a href="#4-修改apache配置文件" class="headerlink" title="4.修改apache配置文件"></a>4.修改apache配置文件</h5><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/httpd/conf/httpd.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>在文件末尾加入如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf">WSGIScriptAlias / /path/to/mysite.com/mysite/wsgi.py
+WSGIPythonHome /path/to/venv
+WSGIPythonPath /path/to/mysite.com
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Directory</span><span class="token directive-block-parameter attr-value"> /path/to/mysite.com/mysite</span><span class="token punctuation">></span></span>
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Files</span><span class="token directive-block-parameter attr-value"> wsgi.py</span><span class="token punctuation">></span></span>
+<span class="token directive-inline property">Require</span> all granted
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Files</span><span class="token punctuation">></span></span>
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Directory</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>然后保存退出，重启apache</p>
+<p>我们来解释一下:<br>（1）第一行包含两部分 第一个地址表示apache从URL的哪开始是运行Django 第二地址是你Django 项目中wsgi.py的位置<br>（2）第二行是你所选择执行你Django程序的python解释器安装目录（如果安装wsgi时已正确指定则可省略）<br>（3）第三行是django项目的位置<br>（4）&lt;Directory 后面上Django 项目的基础配置文件所在目录（一般是和项目目录同名的子目录）<br>余下部分照常</p>
+<p>假如我现在的主机地址为119.23.33.217 开放端口是80<br>我的Django 项目名是first     项目所在目录是&#x2F;etc&#x2F;Django&#x2F;First&#x2F;first<br>并且安装wsgi时我已经指定了python3.6（因为我的Django用的是python3）<br>我希望在浏览器中输入 119.23.33.217&#x2F;wepr&#x2F;xxxxx 的时候可以触发我的Django框架<br>那么我的配置文件应该这样写</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-apacheconf" data-language="apacheconf"><code class="language-apacheconf">WSGIScriptAlias /wepr /etc/Django/First/first/first/wsgi.py
+WSGIPythonPath /etc/Django/First/first
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Directory</span><span class="token directive-block-parameter attr-value"> /etc/Django/First/first/first/</span><span class="token punctuation">></span></span>
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;</span>Files</span><span class="token directive-block-parameter attr-value"> wsgi.py</span><span class="token punctuation">></span></span>
+<span class="token directive-inline property">Require</span> all granted
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Files</span><span class="token punctuation">></span></span>
+<span class="token directive-block tag"><span class="token directive-block tag"><span class="token punctuation">&lt;/</span>Directory</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××<br>关于WSGIScriptAlias中设置子目录的问题：<br>如果采用 WSGIScriptAlias &#x2F; &#x2F;etc&#x2F;Django&#x2F;First&#x2F;first&#x2F;first&#x2F;wsgi.py<br>当你访问119.23.33.217时，就只能触发django，而之前配置的phpmyadmin都不能访问<br>为了合理分配服务器的区块，提高利用效率，建议专门给Django一个虚拟子目录作为“分区”<br>××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××</p>
+<p>以上属于笔者经验  如果大家在安装中出现其它问题或者发现本文疏漏 欢迎大家在下面评论</p>
+<p>本文内容是笔者入门服务器部署时的流水账记录，二次整理到CSDN时，没有再对原内容进行修改，难免会有一些偏差认识，搬到这里来其实怀旧记录的成分更多一点。2020，岁月可期！</p>
+<p>RHEL8都问世好久了，LNMP部署或用容器、或用更友好的管理面板(如宝塔Linux) 笔者之后如果再遇到类似的环境重部署时，会整理一篇新的内容(文笔肯定不会这么滞涩啦 ~hh)~~</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BB%8F%E9%AA%8C%E6%95%B4%E7%90%86/" class="category-chain-item">经验整理</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Django/">#Django</a>
+      
+        <a href="/tags/CentOS7/">#CentOS7</a>
+      
+        <a href="/tags/Apache/">#Apache</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CentOS7后端开发环境(LAMP)部署</div>
+      <div>http://example.com/posts/3b61517d/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2018年9月10日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/posts/455c8476/" title="基于DosBox的汇编环境部署">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">基于DosBox的汇编环境部署</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>
