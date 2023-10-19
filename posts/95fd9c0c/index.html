@@ -16,27 +16,26 @@
   <meta name="author" content="云越泽">
   <meta name="keywords" content="">
   
-    <meta name="description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+    <meta name="description" content="最近在摸索国产神威，由于笔者用的是macbook，登录踩了一点小坑。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TVM实践(一)之TVM安装">
-<meta property="og:url" content="http://example.com/posts/86ceff4c/index.html">
+<meta property="og:title" content="神威日记1-Macbook登录">
+<meta property="og:url" content="http://example.com/posts/95fd9c0c/index.html">
 <meta property="og:site_name" content="云海仙泽">
-<meta property="og:description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+<meta property="og:description" content="最近在摸索国产神威，由于笔者用的是macbook，登录踩了一点小坑。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/tvm.png">
-<meta property="article:published_time" content="2022-07-26T10:46:00.000Z">
-<meta property="article:modified_time" content="2023-09-03T13:47:31.258Z">
+<meta property="og:image" content="http://example.com/img/post/Sunway.png">
+<meta property="article:published_time" content="2023-09-03T12:40:00.000Z">
+<meta property="article:modified_time" content="2023-09-05T02:09:51.246Z">
 <meta property="article:author" content="云越泽">
-<meta property="article:tag" content="TVM">
-<meta property="article:tag" content="Compiler">
+<meta property="article:tag" content="Sunway">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/tvm.png">
+<meta name="twitter:image" content="http://example.com/img/post/Sunway.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>TVM实践(一)之TVM安装 - 云海仙泽</title>
+  <title>神威日记1-Macbook登录 - 云海仙泽</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
 
@@ -216,7 +215,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="TVM实践(一)之TVM安装"></span>
+            <span id="subtitle" data-typed-text="神威日记1-Macbook登录"></span>
           
         </div>
 
@@ -232,8 +231,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-26 18:46" pubdate>
-          2022年7月26日 晚上
+        <time datetime="2023-09-03 20:40" pubdate>
+          2023年9月3日 晚上
         </time>
       </span>
     
@@ -245,7 +244,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          全文字数：2.7k 字
+          全文字数：2.8k 字
         
       </span>
     
@@ -257,7 +256,7 @@
         
         
           <!-- compatible with older versions-->
-          阅读耗时：23 分钟
+          阅读耗时：24 分钟
         
       </span>
     
@@ -303,75 +302,113 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">TVM实践(一)之TVM安装</h1>
+            <h1 style="display: none">神威日记1-Macbook登录</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="在Linux上从源码安装tvm"><a href="#在Linux上从源码安装tvm" class="headerlink" title="在Linux上从源码安装tvm"></a>在Linux上从源码安装tvm</h2><h3 id="1-拉取源码"><a href="#1-拉取源码" class="headerlink" title="1. 拉取源码"></a>1. 拉取源码</h3><p>先把源代码拉下来，注意使用<code>--recursive</code>可用来获取TVM的依赖(会下载到<code>tvm/3rdparty</code>目录下)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone <span class="token parameter variable">--recursive</span> https://github.com/apache/tvm tvm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>如果第三方依赖下载过慢，可以在<code>git clone</code>后，进入tvm目录执行下述<strong>命令:</strong></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> submodule init  
-<span class="token function">git</span> submodule update<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<h3 id="2-构建准备"><a href="#2-构建准备" class="headerlink" title="2.构建准备"></a>2.构建准备</h3><p>我们的目标是从源码编译得到<code>libtvm.so</code> 和 <code>libtvm_runtime.so</code>。</p>
-<h4 id="2-1-安装依赖"><a href="#2-1-安装依赖" class="headerlink" title="2.1 安装依赖"></a>2.1 安装依赖</h4><p>为保证构建过程顺利完成，我们还需要完成如下依赖的安装：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span>  gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<p>请确保<code>CMake version &gt;= 3.10 </code>。</p>
-<h4 id="2-2-选择构建工具"><a href="#2-2-选择构建工具" class="headerlink" title="2.2 选择构建工具"></a>2.2 选择构建工具</h4><p>为了更快地增量编译，我们选择使用<code>ninja</code>来进行构建，apt仓库的<code>ninja</code>已完全可用，安装可通过如下命令进行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ninja<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>安装完成后可通过<code>ninja --version</code>查看。</p>
-<h4 id="2-3-解决python环境"><a href="#2-3-解决python环境" class="headerlink" title="2.3 解决python环境"></a>2.3 解决python环境</h4><p>由于官方文档(0.9.dev0)指出tvm的Python目前仅支持3.8.X+ 和3.7.X+，因此，我们选择使用<code>conda</code>来创建tvm的python环境(conda安装请自行解决)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tvm <span class="token assign-left variable">python</span><span class="token operator">=</span><span class="token number">3.8</span>
-<span class="token builtin class-name">source</span> activate tvm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+                <p>最近在摸索国产神威，由于笔者用的是macbook，登录踩了一点小坑。</p>
+<h2 id="优化中字版"><a href="#优化中字版" class="headerlink" title="优化中字版"></a>优化中字版</h2><h3 id="1-部署VPN客户端"><a href="#1-部署VPN客户端" class="headerlink" title="1.  部署VPN客户端"></a>1.  部署VPN客户端</h3><p>我们拟采用docker来启动神威的VPN客户端，并将容器的指定端口转发映射到宿主机的端口，用作ssh登录的代理接口。</p>
+<ol>
+<li><p>先确保安装docker。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">brew <span class="token function">install</span> <span class="token parameter variable">--cask</span> <span class="token parameter variable">--appdir</span><span class="token operator">=</span>/Applications <span class="token function">docker</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+</li>
+<li><p>创建docker脚本，并初始化。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> sunway_vpn.sh<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
-<h3 id="3-构建配置"><a href="#3-构建配置" class="headerlink" title="3.构建配置"></a>3.构建配置</h3><h4 id="3-1自定义构建选项"><a href="#3-1自定义构建选项" class="headerlink" title="3.1自定义构建选项"></a>3.1自定义构建选项</h4><p>在<code>tvm</code>下创建好<code>build</code>目录，构建所需的配置文件可从<code>tvm/cmake/config.cmake</code>中拷贝。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> tvm 
-<span class="token function">mkdir</span> build 
-<span class="token function">cp</span> cmake/config.cmake build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>来自定义构建选项：</p>
+
+
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token shebang important">#!/bin/bash</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">-it</span> <span class="token parameter variable">--device</span> /dev/net/tun <span class="token punctuation">\</span>
+ --cap-add NET_ADMIN <span class="token parameter variable">-p</span> <span class="token number">127.0</span>.0.1:<span class="token operator">&lt;</span>forward-port<span class="token operator">></span>:1080 <span class="token punctuation">\</span>
+ <span class="token parameter variable">--name</span> <span class="token operator">&lt;</span>container_name<span class="token operator">></span> <span class="token parameter variable">-e</span> <span class="token assign-left variable">USER_NAME</span><span class="token operator">=</span><span class="token operator">&lt;</span>vpn_user<span class="token operator">></span> <span class="token parameter variable">-e</span> <span class="token assign-left variable">PASSWORD</span><span class="token operator">=</span><span class="token operator">&lt;</span>vpn_passwd<span class="token operator">></span> <span class="token punctuation">\</span>
+ <span class="token parameter variable">-e</span> <span class="token assign-left variable">SERVER_ADDRESS</span><span class="token operator">=</span><span class="token operator">&lt;</span>vpn_ip:vpn_port<span class="token operator">></span> waldon/topsap:arm64<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
 <ul>
-<li><code>set(USE_CUDA ON)</code> 启用CUDA后端(需要本地安装CUDA&gt;&#x3D;8.0)</li>
-<li>启用<code>set(USE_GRAPH_EXECUTOR ON)</code>、<code>set(USE_PROFILER ON)</code>来帮助debug。</li>
-<li>如果需要debug IRS，则需要<code>set(USE_RELAY_DEBUG ON)</code>并设置环境变量<em>TVM_LOG_DEBUG</em>。  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LOG_DEBUG</span><span class="token operator">=</span><span class="token string">"ir/transform.cc=1,relay/ir/transform.cc=1"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure></li>
-</ul>
-<h4 id="3-2-安装并启用llvm"><a href="#3-2-安装并启用llvm" class="headerlink" title="3.2 安装并启用llvm"></a>3.2 安装并启用llvm</h4><p>TVM 依赖 LLVM 用于 CPU 代码生成，官方强烈建议在进行构建的时候启用LLVM，且需要 <code>llvm version &gt;= 4.0</code>，而使用<code>apt</code>默认安装的会低于4.0，我们选择前往<a target="_blank" rel="noopener" href="https://releases.llvm.org/download.html">llvm官页</a>下载编译好的llvm包(Pre-Built Binaries)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>，修改<code>set(USE_LLVM &lt;your_llvm_path&gt;/bin/llvm-config)</code>。<br>为了后续调试方便，您可以将llvm加入环境变量：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token string">"&lt;your_path>/llvm/bin:<span class="token environment constant">$PATH</span>"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-
-<h3 id="4-编译构建"><a href="#4-编译构建" class="headerlink" title="4.编译构建"></a>4.编译构建</h3><p>TVM 的默认配置是构建 RELEASE 版本的共享库。如果要构建 DEBUG 版本的，可以使用选项<code>-DCMAKE_BUILD_TYPE=Debug</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> build
-cmake <span class="token parameter variable">-DCMAKE_BUILD_TYPE</span><span class="token operator">=</span>Debug <span class="token parameter variable">-G</span> Ninja <span class="token punctuation">..</span>
-ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编译成功后，生成的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>位于<code>build</code>目录下。</p>
-<p>查看生成的共享库是否是<code>DEBUG</code>版本，可在构建目录中执行如下命令，看是否有<code>with debug_info</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-shell-session" data-language="shell-session"><code class="language-shell-session"><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm.so </span></span>
-<span class="token output">libtvm.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=57549746b04cd3a7cb359e375db427e1b01a63a2, with debug_info, not stripped
-</span><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm_runtime.so </span></span>
-<span class="token output">libtvm_runtime.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=0101648081939d9d6b9498d47498121ecd2aba5b, with debug_info, not stripped</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
-
-<h3 id="5-安装tvmc-TVM命令行工具"><a href="#5-安装tvmc-TVM命令行工具" class="headerlink" title="5. 安装tvmc (TVM命令行工具)"></a>5. 安装tvmc (TVM命令行工具)</h3><h4 id="5-1-安装依赖"><a href="#5-1-安装依赖" class="headerlink" title="5.1 安装依赖"></a>5.1 安装依赖</h4><p>TVM命令行工具<code>tvmc</code>以python包形式存在于克隆的仓库目录<code>tvm/python/tvm/driver</code>下，我们需要安装如下依赖确保<code>tvmc</code>正常运行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip <span class="token function">install</span> numpy decorator attrs scipy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<h4 id="5-2-环境变量配置"><a href="#5-2-环境变量配置" class="headerlink" title="5.2 环境变量配置"></a>5.2 环境变量配置</h4><p>为了能使<code>tvmc</code>可以被正确加载，我们需要添加如下环境变量(可写入<code>~/.bashrc</code>等，请依shell类型确定)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_HOME</span><span class="token operator">=</span><span class="token operator">&lt;</span>your_clone_path<span class="token operator">></span>/tvm
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">PYTHONPATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/python:<span class="token variable">$&#123;PYTHONPATH&#125;</span>
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LIBRARY_PATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>注：</p>
+<li><p><code>&lt;forward-port&gt;</code>：映射到宿主机的端口，可任意填写，尽量避开常用端口段(笔者用了<em>1088-1099</em>)。</p>
 <ul>
-<li>修改<code>PYTHONPATH</code>是为了<code>python</code>能找到<code>tvm.driver.tvmc</code>。</li>
-<li>添加环境变量<code>TVM_LIBRARY_PATH</code>是为了<code>tvmc</code>能找到所需的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>。</li>
+<li>备注：后续如果需要多开VPN，只需要另增容器，转发不同的端口即可。</li>
 </ul>
-<p>我们可以重启shell或<code>source ~/.bashrc</code>使上述修改立即<strong>生效</strong>。</p>
-<h4 id="5-3运行与别名"><a href="#5-3运行与别名" class="headerlink" title="5.3运行与别名"></a>5.3运行与别名</h4><p>您可以通过下述命令来运行tvmc并查看帮助：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 <span class="token parameter variable">-m</span> tvm.driver.tvmc <span class="token parameter variable">--help</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>为了使用方便，我们可以为shell执行构建命令别名，您可将下述内容写入<code>~/.bashrc</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">alias</span> <span class="token assign-left variable">tvmc</span><span class="token operator">=</span><span class="token string">'python3 -m tvm.driver.tvmc'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>生效后，我们就可以直接执行<code>tvmc</code>。</p>
-<h3 id="工作参考"><a href="#工作参考" class="headerlink" title="工作参考"></a>工作参考</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/">TVM官方手册</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/tvm">TVM项目源码</a></li>
-<li><a target="_blank" rel="noopener" href="https://csstormq.github.io/blog/TVM%20%E7%AF%87%EF%BC%881%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BB%8E%E6%BA%90%E7%A0%81%E6%9E%84%E5%BB%BA%E5%B9%B6%E5%AE%89%E8%A3%85%20TVM">在Ubuntu从源码构建和安装TVM</a></li>
+</li>
+<li><p><code>&lt;container_name&gt;</code>：容器命名，后续许多docker命令的操作标识，建议简短而明确。</p>
+</li>
+<li><p><code>&lt;vpn_user&gt;</code>和<code>&lt;vpn_passwd&gt;</code>：VPN的用户名和密码。</p>
+</li>
+<li><p><code>&lt;vpn-ip:vpn-port&gt;</code>：VPN的<code>server_ip:server_port</code>。</p>
+</li>
+</ul>
+</li>
+<li><p>创建并启动容器。</p>
+<p>初次运行需要先创建容器：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> +x sunway_vpn.sh 
+./sunway_vpn.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>成功运行，你将看到屏幕中打印出的容器id，此后无需再运行此脚本。</p>
+</li>
+<li><p>检查容器状态。</p>
+<ul>
+<li><p><code>docker ps -a</code> 可以罗列出当前宿主机运行的全部容器及其运行状态。</p>
+</li>
+<li><p><code>docker logs &lt;container_name&gt;</code> 可以查看容器的运行输出，在此能看到VPN端的登录过程以及运行状态。 </p>
+<ul>
+<li>另一个直观的方法是使用<code>curl --proxy socks5://127.0.0.1:&lt;forward-port&gt; http://checkip.amazonaws.com</code>，若能回显你的ip地址，则说明代理已通。</li>
+</ul>
+</li>
+<li><p><code>docker &lt;start|stop|restart|rm&gt; &lt;container_name&gt;</code> 当客户端异常时，可以考虑重启或者删除重建。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-配置ssh"><a href="#2-配置ssh" class="headerlink" title="2. 配置ssh"></a>2. 配置ssh</h3><p>请确保你已经拿到了服务器的IP、用户名和密码。</p>
+<p>请记录好你的转发地址，此处假设是<code>1088</code>，你可以直接输入完整命令来进行代理ssh：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">ssh</span> <span class="token parameter variable">-o</span> <span class="token assign-left variable">ProxyCommand</span><span class="token operator">=</span><span class="token string">"nc -x 127.0.0.1:1088 %h %p"</span> <span class="token operator">&lt;</span>username<span class="token operator">></span>@<span class="token operator">&lt;</span>ip<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+
+<p>当然也可以<code>vim ~/.ssh/config</code>，新增对应服务器的配置</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Host <span class="token operator">&lt;</span>server_name<span class="token operator">></span>
+    HostName <span class="token operator">&lt;</span>ip<span class="token operator">></span>
+    User <span class="token operator">&lt;</span>username<span class="token operator">></span>
+    ProxyCommand <span class="token function">nc</span> <span class="token parameter variable">-x</span> <span class="token number">127.0</span>.0.1:1088 %h %p<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>在完成ssh登录后，可自行完成密钥登录配置，不再赘述。</p>
+<h3 id="3-使用补充"><a href="#3-使用补充" class="headerlink" title="3. 使用补充"></a>3. 使用补充</h3><ul>
+<li><p>每过一段时间就需要重新启动vpn，可直接重启容器，也可以：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#进入容器终端 由于守护进程的原因 使用attach会一直卡住进不去</span>
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> <span class="token operator">&lt;</span>container_name<span class="token operator">|</span>container_id<span class="token operator">></span> /bin/bash 
+<span class="token comment">##进入 root@&lt;container_id>:/home/work# ## </span>
+<span class="token comment">#重启动vpn</span>
+./start.sh 
+<span class="token comment">#用了-it 可以直接退出终端</span>
+<span class="token builtin class-name">exit</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure></li>
+</ul>
+<h2 id="简洁英版"><a href="#简洁英版" class="headerlink" title="简洁英版"></a>简洁英版</h2><h3 id="Create-VPN"><a href="#Create-VPN" class="headerlink" title="Create VPN"></a>Create VPN</h3><ol>
+<li>copy <code>topsap-docker.sh</code></li>
+<li>modify the <code>&lt;username&gt;</code> <code>&lt;password&gt;</code> and <code>&lt;ip:port&gt;</code>  <strong>as</strong> the VPN settings. </li>
+<li>modify the <code>&lt;container_name&gt;</code> as an explicit name (e.g. <em>sunway_vpn</em>).</li>
+<li>Be sure that you have installed the Docker. </li>
+<li>exc <code>bash topsap-docker_copy.sh</code>.</li>
+</ol>
+<blockquote>
+<p>If you run above script for first time, you’ll see the download process for <em>waldon&#x2F;topsap:arm64</em>  and get a <container_id> for your vpn-container.<br>Otherwise, you’ll only get the <container_id> when container is created and running successfully.</p>
+</blockquote>
+<h3 id="Check-Container"><a href="#Check-Container" class="headerlink" title="Check Container"></a>Check Container</h3><ol>
+<li>You can check container status via <code>docker ps -a</code>. You can find <em>up any times</em> for your container in <em>STATUS</em>.</li>
+<li>You can check vpn logs via <code>docker logs &lt;container_name&gt;</code>. If you can’t find “<em>Login Success!</em>“, there must have been a big Bang somewhere in your preference!</li>
+<li>You can check vpn adress via <code>curl --proxy socks5://127.0.0.1:1088 http://checkip.amazonaws.com</code>. If all is right, you can get the eyour native ip address.</li>
+</ol>
+<h3 id="SSH-over-Proxy"><a href="#SSH-over-Proxy" class="headerlink" title="SSH over Proxy"></a>SSH over Proxy</h3><ol>
+<li><p>you can directly use <code>-o</code> and <code>ProxyCommand</code> as the following:<br><code>ssh -o ProxyCommand=&quot;nc -x 127.0.0.1:1088 %h %p&quot; &lt;username&gt;@&lt;ip&gt;</code><br>you dont need modify <code>%h</code> and <code>%p</code>.</p>
+</li>
+<li><p>Alternatively, you can add to <code>~/.ssh/config</code> as following:</p>
+</li>
+</ol>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Host <span class="token operator">&lt;</span>server_name<span class="token operator">></span>
+    HostName <span class="token operator">&lt;</span>ip<span class="token operator">></span>
+    User <span class="token operator">&lt;</span>username<span class="token operator">></span>
+    ProxyCommand <span class="token function">nc</span> <span class="token parameter variable">-x</span> <span class="token number">127.0</span>.0.1:1088 %h %p<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>Modify the <code>&lt;server_name&gt;</code> as an explicit short name.<br>Modify the <code>&lt;ip&gt;</code> and <code>&lt;username&gt;</code>  <strong>as</strong> the Sunway Server IP address and username. </p>
+<h2 id="工作参考"><a href="#工作参考" class="headerlink" title="工作参考"></a>工作参考</h2><ul>
+<li>大师兄的Docker脚本。</li>
 </ul>
 
                 
@@ -391,7 +428,7 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     
       <span class="category-chain">
         
-  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  <a href="/categories/%E7%A5%9E%E5%A8%81%E6%97%A5%E8%AE%B0/" class="category-chain-item">神威日记</a>
   
   
 
@@ -406,9 +443,7 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/TVM/">#TVM</a>
-      
-        <a href="/tags/Compiler/">#Compiler</a>
+        <a href="/tags/Sunway/">#Sunway</a>
       
     </div>
   
@@ -420,15 +455,15 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>TVM实践(一)之TVM安装</div>
-      <div>http://example.com/posts/86ceff4c/</div>
+      <div>神威日记1-Macbook登录</div>
+      <div>http://example.com/posts/95fd9c0c/</div>
     </div>
     <div class="license-meta">
       
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年7月26日</div>
+          <div>2023年9月3日</div>
         </div>
       
       
@@ -460,9 +495,9 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/posts/e9d4a39f/" title="Vim 学习整理">
+                      <a href="/posts/90ba6669/" title="神威日记2-作业管理">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Vim 学习整理</span>
+                        <span class="hidden-mobile">神威日记2-作业管理</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -470,8 +505,8 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <article class="post-next col-6">
                     
                     
-                      <a href="/posts/71fcd42/" title="CPU并行编程模式">
-                        <span class="hidden-mobile">CPU并行编程模式</span>
+                      <a href="/posts/e077a574/" title="Matlab 命令行安装">
+                        <span class="hidden-mobile">Matlab 命令行安装</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

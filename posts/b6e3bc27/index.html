@@ -16,27 +16,25 @@
   <meta name="author" content="云越泽">
   <meta name="keywords" content="">
   
-    <meta name="description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+    <meta name="description" content="vscode-remote连接神威时，vscode-server触发了更新，由于复杂的网络问题，导致一直卡在vscode-server的下载安装和初始化部分。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TVM实践(一)之TVM安装">
-<meta property="og:url" content="http://example.com/posts/86ceff4c/index.html">
+<meta property="og:title" content="vscode-server端问题记录">
+<meta property="og:url" content="http://example.com/posts/b6e3bc27/index.html">
 <meta property="og:site_name" content="云海仙泽">
-<meta property="og:description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+<meta property="og:description" content="vscode-remote连接神威时，vscode-server触发了更新，由于复杂的网络问题，导致一直卡在vscode-server的下载安装和初始化部分。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/tvm.png">
-<meta property="article:published_time" content="2022-07-26T10:46:00.000Z">
-<meta property="article:modified_time" content="2023-09-03T13:47:31.258Z">
+<meta property="article:published_time" content="2023-09-09T12:50:00.000Z">
+<meta property="article:modified_time" content="2023-09-09T12:59:58.260Z">
 <meta property="article:author" content="云越泽">
-<meta property="article:tag" content="TVM">
-<meta property="article:tag" content="Compiler">
+<meta property="article:tag" content="Sunway">
+<meta property="article:tag" content="vscode">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/tvm.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>TVM实践(一)之TVM安装 - 云海仙泽</title>
+  <title>vscode-server端问题记录 - 云海仙泽</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
 
@@ -216,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="TVM实践(一)之TVM安装"></span>
+            <span id="subtitle" data-typed-text="vscode-server端问题记录"></span>
           
         </div>
 
@@ -232,8 +230,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-26 18:46" pubdate>
-          2022年7月26日 晚上
+        <time datetime="2023-09-09 20:50" pubdate>
+          2023年9月9日 晚上
         </time>
       </span>
     
@@ -245,7 +243,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          全文字数：2.7k 字
+          全文字数：2k 字
         
       </span>
     
@@ -257,7 +255,7 @@
         
         
           <!-- compatible with older versions-->
-          阅读耗时：23 分钟
+          阅读耗时：17 分钟
         
       </span>
     
@@ -303,76 +301,58 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">TVM实践(一)之TVM安装</h1>
+            <h1 style="display: none">vscode-server端问题记录</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="在Linux上从源码安装tvm"><a href="#在Linux上从源码安装tvm" class="headerlink" title="在Linux上从源码安装tvm"></a>在Linux上从源码安装tvm</h2><h3 id="1-拉取源码"><a href="#1-拉取源码" class="headerlink" title="1. 拉取源码"></a>1. 拉取源码</h3><p>先把源代码拉下来，注意使用<code>--recursive</code>可用来获取TVM的依赖(会下载到<code>tvm/3rdparty</code>目录下)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone <span class="token parameter variable">--recursive</span> https://github.com/apache/tvm tvm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>如果第三方依赖下载过慢，可以在<code>git clone</code>后，进入tvm目录执行下述<strong>命令:</strong></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> submodule init  
-<span class="token function">git</span> submodule update<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<h3 id="2-构建准备"><a href="#2-构建准备" class="headerlink" title="2.构建准备"></a>2.构建准备</h3><p>我们的目标是从源码编译得到<code>libtvm.so</code> 和 <code>libtvm_runtime.so</code>。</p>
-<h4 id="2-1-安装依赖"><a href="#2-1-安装依赖" class="headerlink" title="2.1 安装依赖"></a>2.1 安装依赖</h4><p>为保证构建过程顺利完成，我们还需要完成如下依赖的安装：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span>  gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<p>请确保<code>CMake version &gt;= 3.10 </code>。</p>
-<h4 id="2-2-选择构建工具"><a href="#2-2-选择构建工具" class="headerlink" title="2.2 选择构建工具"></a>2.2 选择构建工具</h4><p>为了更快地增量编译，我们选择使用<code>ninja</code>来进行构建，apt仓库的<code>ninja</code>已完全可用，安装可通过如下命令进行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ninja<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>安装完成后可通过<code>ninja --version</code>查看。</p>
-<h4 id="2-3-解决python环境"><a href="#2-3-解决python环境" class="headerlink" title="2.3 解决python环境"></a>2.3 解决python环境</h4><p>由于官方文档(0.9.dev0)指出tvm的Python目前仅支持3.8.X+ 和3.7.X+，因此，我们选择使用<code>conda</code>来创建tvm的python环境(conda安装请自行解决)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tvm <span class="token assign-left variable">python</span><span class="token operator">=</span><span class="token number">3.8</span>
-<span class="token builtin class-name">source</span> activate tvm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-
-<h3 id="3-构建配置"><a href="#3-构建配置" class="headerlink" title="3.构建配置"></a>3.构建配置</h3><h4 id="3-1自定义构建选项"><a href="#3-1自定义构建选项" class="headerlink" title="3.1自定义构建选项"></a>3.1自定义构建选项</h4><p>在<code>tvm</code>下创建好<code>build</code>目录，构建所需的配置文件可从<code>tvm/cmake/config.cmake</code>中拷贝。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> tvm 
-<span class="token function">mkdir</span> build 
-<span class="token function">cp</span> cmake/config.cmake build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>来自定义构建选项：</p>
+                <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>vscode-remote连接神威时，vscode-server触发了更新，由于复杂的网络问题，导致一直卡在vscode-server的下载安装和初始化部分。长时间停留在<code>installing and setting up visual studio coder server.....</code>无响应。</p>
+<h2 id="失败方案"><a href="#失败方案" class="headerlink" title="失败方案"></a>失败方案</h2><h3 id="1-离线更新vscode-server"><a href="#1-离线更新vscode-server" class="headerlink" title="1. 离线更新vscode-server"></a>1. 离线更新vscode-server</h3><p>我最先想到的方案是关闭远程连接的尝试，删除 <code>~/.vscode-server/bin/&lt;commit-id&gt;</code>下的文件。</p>
+<p>首先遇到了：</p>
 <ul>
-<li><code>set(USE_CUDA ON)</code> 启用CUDA后端(需要本地安装CUDA&gt;&#x3D;8.0)</li>
-<li>启用<code>set(USE_GRAPH_EXECUTOR ON)</code>、<code>set(USE_PROFILER ON)</code>来帮助debug。</li>
-<li>如果需要debug IRS，则需要<code>set(USE_RELAY_DEBUG ON)</code>并设置环境变量<em>TVM_LOG_DEBUG</em>。  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LOG_DEBUG</span><span class="token operator">=</span><span class="token string">"ir/transform.cc=1,relay/ir/transform.cc=1"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure></li>
+<li>无法删除 <code>.nfs000000000000001709cf70000000059353</code>等的设备忙或资源忙</li>
+<li>无法删除<code>node_moudules.node-pty/build/release</code> 目录非空</li>
 </ul>
-<h4 id="3-2-安装并启用llvm"><a href="#3-2-安装并启用llvm" class="headerlink" title="3.2 安装并启用llvm"></a>3.2 安装并启用llvm</h4><p>TVM 依赖 LLVM 用于 CPU 代码生成，官方强烈建议在进行构建的时候启用LLVM，且需要 <code>llvm version &gt;= 4.0</code>，而使用<code>apt</code>默认安装的会低于4.0，我们选择前往<a target="_blank" rel="noopener" href="https://releases.llvm.org/download.html">llvm官页</a>下载编译好的llvm包(Pre-Built Binaries)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>，修改<code>set(USE_LLVM &lt;your_llvm_path&gt;/bin/llvm-config)</code>。<br>为了后续调试方便，您可以将llvm加入环境变量：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token string">"&lt;your_path>/llvm/bin:<span class="token environment constant">$PATH</span>"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<p>通过<code>fuser -km &lt;directory&gt;</code>的方式，可以把占用的进程杀死，踢出用户。 然后重新ssh登录就可以删除。</p>
+<p>然后，前往下述网站下载最新的server包(将<code>&lt;commit-id&gt;</code>替换成具体的id)。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">https:&#x2F;&#x2F;update.code.visualstudio.com&#x2F;commit:&lt;commit-id&gt;&#x2F;server-linux-x64&#x2F;stable<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
-<h3 id="4-编译构建"><a href="#4-编译构建" class="headerlink" title="4.编译构建"></a>4.编译构建</h3><p>TVM 的默认配置是构建 RELEASE 版本的共享库。如果要构建 DEBUG 版本的，可以使用选项<code>-DCMAKE_BUILD_TYPE=Debug</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> build
-cmake <span class="token parameter variable">-DCMAKE_BUILD_TYPE</span><span class="token operator">=</span>Debug <span class="token parameter variable">-G</span> Ninja <span class="token punctuation">..</span>
-ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编译成功后，生成的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>位于<code>build</code>目录下。</p>
-<p>查看生成的共享库是否是<code>DEBUG</code>版本，可在构建目录中执行如下命令，看是否有<code>with debug_info</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-shell-session" data-language="shell-session"><code class="language-shell-session"><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm.so </span></span>
-<span class="token output">libtvm.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=57549746b04cd3a7cb359e375db427e1b01a63a2, with debug_info, not stripped
-</span><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm_runtime.so </span></span>
-<span class="token output">libtvm_runtime.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=0101648081939d9d6b9498d47498121ecd2aba5b, with debug_info, not stripped</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>接着，上传到服务器并解压。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">scp</span> ~/Downloads/vscode-server-linux-x64.tar.gz sw:~/.vscode-server/bin/
+<span class="token comment">#切到神威上</span>
+<span class="token builtin class-name">cd</span> ~/.vscode-server/bin/
+<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> <span class="token operator">&lt;</span>commit-id<span class="token operator">></span> 
+<span class="token function">tar</span> <span class="token parameter variable">-zxvf</span> vscode-server-linux-x64.tar.gz 
+<span class="token function">mv</span> vscode-server-linux-x64/*   <span class="token operator">&lt;</span>commit-id<span class="token operator">></span>/
+<span class="token function">rm</span> <span class="token parameter variable">-rf</span> vscode-server-linux-x64* <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
-<h3 id="5-安装tvmc-TVM命令行工具"><a href="#5-安装tvmc-TVM命令行工具" class="headerlink" title="5. 安装tvmc (TVM命令行工具)"></a>5. 安装tvmc (TVM命令行工具)</h3><h4 id="5-1-安装依赖"><a href="#5-1-安装依赖" class="headerlink" title="5.1 安装依赖"></a>5.1 安装依赖</h4><p>TVM命令行工具<code>tvmc</code>以python包形式存在于克隆的仓库目录<code>tvm/python/tvm/driver</code>下，我们需要安装如下依赖确保<code>tvmc</code>正常运行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip <span class="token function">install</span> numpy decorator attrs scipy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<h4 id="5-2-环境变量配置"><a href="#5-2-环境变量配置" class="headerlink" title="5.2 环境变量配置"></a>5.2 环境变量配置</h4><p>为了能使<code>tvmc</code>可以被正确加载，我们需要添加如下环境变量(可写入<code>~/.bashrc</code>等，请依shell类型确定)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_HOME</span><span class="token operator">=</span><span class="token operator">&lt;</span>your_clone_path<span class="token operator">></span>/tvm
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">PYTHONPATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/python:<span class="token variable">$&#123;PYTHONPATH&#125;</span>
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LIBRARY_PATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>注：</p>
-<ul>
-<li>修改<code>PYTHONPATH</code>是为了<code>python</code>能找到<code>tvm.driver.tvmc</code>。</li>
-<li>添加环境变量<code>TVM_LIBRARY_PATH</code>是为了<code>tvmc</code>能找到所需的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>。</li>
-</ul>
-<p>我们可以重启shell或<code>source ~/.bashrc</code>使上述修改立即<strong>生效</strong>。</p>
-<h4 id="5-3运行与别名"><a href="#5-3运行与别名" class="headerlink" title="5.3运行与别名"></a>5.3运行与别名</h4><p>您可以通过下述命令来运行tvmc并查看帮助：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 <span class="token parameter variable">-m</span> tvm.driver.tvmc <span class="token parameter variable">--help</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>为了使用方便，我们可以为shell执行构建命令别名，您可将下述内容写入<code>~/.bashrc</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">alias</span> <span class="token assign-left variable">tvmc</span><span class="token operator">=</span><span class="token string">'python3 -m tvm.driver.tvmc'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>生效后，我们就可以直接执行<code>tvmc</code>。</p>
-<h3 id="工作参考"><a href="#工作参考" class="headerlink" title="工作参考"></a>工作参考</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/">TVM官方手册</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/tvm">TVM项目源码</a></li>
-<li><a target="_blank" rel="noopener" href="https://csstormq.github.io/blog/TVM%20%E7%AF%87%EF%BC%881%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BB%8E%E6%BA%90%E7%A0%81%E6%9E%84%E5%BB%BA%E5%B9%B6%E5%AE%89%E8%A3%85%20TVM">在Ubuntu从源码构建和安装TVM</a></li>
-</ul>
+<p>尝试从宿主机重启vscode，初次成功登录远端主机，但很快进入<code>远程主机重新加载</code>，再次陷入<code>installing and setting up visual studio coder server.....</code>无响应。</p>
+<h3 id="2-强制本地scp"><a href="#2-强制本地scp" class="headerlink" title="2. 强制本地scp"></a>2. 强制本地scp</h3><p>关闭vscode的远端连接，删除上述内容后。找到vscode 设置（可以直接在设置面板搜索download）：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">Remote.SSH: Local Server Download
+(扩展是否可以在客户端上下载 VS Code 服务器，并使用 scp 将其传输到主机，而不是将其下载到主机上。)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>将上述设置的选项调为<code>always</code>。</p>
+<p><code>Cmd/Ctrl+Shift+P</code>重载vscode窗口，重新连接，仍然是上述问题。</p>
+<h3 id="3-尝试从其他服务器端复制vscode-server"><a href="#3-尝试从其他服务器端复制vscode-server" class="headerlink" title="3. 尝试从其他服务器端复制vscode-server"></a>3. 尝试从其他服务器端复制vscode-server</h3><p>由于笔者所在的SW终端机实际架构是沿用Centos，因此在连接的客户端相同的情况下，<code>vscode-server</code>是和其他linux主机相同的。我尝试在网络状况较好的实验室主机<code>hades0</code>上，由服务器端更新了vscode-server，并将<code>~/.vscode-server/bin/&lt;commit-id&gt;</code>打包传输到sw相同目录下，具体步骤仍然是同 方案1。</p>
+<p>仍然失败，但日志中多了一些scp命令，根据显示来看是将sw主机端中的一部分<code>cli</code>相关文件，拷贝到<code>~/.vscode-server/cli/servers/</code>，同时由主机端再次尝试下载<code>vscode-server</code>。</p>
+<h2 id="成功解决"><a href="#成功解决" class="headerlink" title="成功解决"></a>成功解决</h2><p>借鉴了上述第三步中的日志，初步猜测是vscode在server上的命令行工具(<code>cli</code>)和<code>vscode-server</code>的适配有些问题。我尝试将<code>hades0</code>上更新成功的<code>cli</code>相关文件一起拷贝到了<code>sw</code>上：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#hades0上</span>
+<span class="token builtin class-name">cd</span> ~/.vscode-server/cli
+<span class="token function">tar</span> <span class="token parameter variable">-zcvf</span> vscode-server-cli.tar.gz ./servers
+<span class="token function">scp</span> vscode-server-cli.tar.gz sw:~/.vscode-server/cli/
+<span class="token comment">#sw上</span>
+<span class="token builtin class-name">cd</span> ~/.vscode-server/cli/ 
+<span class="token comment">#风险操作 但因为hades0上只有我的commit-id文件 因此直接覆盖到sw对应目录下</span>
+<span class="token comment">#建议先解压到其他位置 再将包含自己commit-id的目录 移动到servers下面</span>
+<span class="token function">tar</span> <span class="token parameter variable">-zxvf</span> vscode-server-cli.tar.gz <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>起作用的是下面两个目录。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">Stable-&lt;commit-id&gt;
+Stable-&lt;commit-id&gt;.staging<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+<p>要保证<code>~/.vscode-server/bin/&lt;commit-id&gt;</code>的文件和上述<code>cli</code>文件是适配的。最好是从相同服务器上复制过来的相同commit-id文件。</p>
+<p>再次重载vscode，尝试remote-ssh连接，发现成功。</p>
+<p>特此记录一下不同的解决思路，以备不时之需。</p>
 
                 
               </div>
@@ -391,7 +371,7 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     
       <span class="category-chain">
         
-  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  <a href="/categories/%E7%BB%8F%E9%AA%8C%E6%95%B4%E7%90%86/" class="category-chain-item">经验整理</a>
   
   
 
@@ -406,9 +386,9 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/TVM/">#TVM</a>
+        <a href="/tags/Sunway/">#Sunway</a>
       
-        <a href="/tags/Compiler/">#Compiler</a>
+        <a href="/tags/vscode/">#vscode</a>
       
     </div>
   
@@ -420,15 +400,15 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>TVM实践(一)之TVM安装</div>
-      <div>http://example.com/posts/86ceff4c/</div>
+      <div>vscode-server端问题记录</div>
+      <div>http://example.com/posts/b6e3bc27/</div>
     </div>
     <div class="license-meta">
       
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年7月26日</div>
+          <div>2023年9月9日</div>
         </div>
       
       
@@ -460,18 +440,12 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/posts/e9d4a39f/" title="Vim 学习整理">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Vim 学习整理</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/posts/71fcd42/" title="CPU并行编程模式">
-                        <span class="hidden-mobile">CPU并行编程模式</span>
+                      <a href="/posts/2f338cd1/" title="神威日记3-swpytorch初体验">
+                        <span class="hidden-mobile">神威日记3-swpytorch初体验</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

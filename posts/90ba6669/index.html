@@ -16,27 +16,26 @@
   <meta name="author" content="云越泽">
   <meta name="keywords" content="">
   
-    <meta name="description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+    <meta name="description" content="最近在摸索国产神威，对作业管理做一些简单记录。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TVM实践(一)之TVM安装">
-<meta property="og:url" content="http://example.com/posts/86ceff4c/index.html">
+<meta property="og:title" content="神威日记2-作业管理">
+<meta property="og:url" content="http://example.com/posts/90ba6669/index.html">
 <meta property="og:site_name" content="云海仙泽">
-<meta property="og:description" content="笔者近期的工作涉及到TVM的使用，故开一坑，简单记录。">
+<meta property="og:description" content="最近在摸索国产神威，对作业管理做一些简单记录。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/tvm.png">
-<meta property="article:published_time" content="2022-07-26T10:46:00.000Z">
-<meta property="article:modified_time" content="2023-09-03T13:47:31.258Z">
+<meta property="og:image" content="http://example.com/img/post/Sunway.png">
+<meta property="article:published_time" content="2023-09-03T12:40:00.000Z">
+<meta property="article:modified_time" content="2023-09-10T14:03:46.231Z">
 <meta property="article:author" content="云越泽">
-<meta property="article:tag" content="TVM">
-<meta property="article:tag" content="Compiler">
+<meta property="article:tag" content="Sunway">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/tvm.png">
+<meta name="twitter:image" content="http://example.com/img/post/Sunway.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>TVM实践(一)之TVM安装 - 云海仙泽</title>
+  <title>神威日记2-作业管理 - 云海仙泽</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
 
@@ -216,7 +215,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="TVM实践(一)之TVM安装"></span>
+            <span id="subtitle" data-typed-text="神威日记2-作业管理"></span>
           
         </div>
 
@@ -232,8 +231,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-26 18:46" pubdate>
-          2022年7月26日 晚上
+        <time datetime="2023-09-03 20:40" pubdate>
+          2023年9月3日 晚上
         </time>
       </span>
     
@@ -245,7 +244,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          全文字数：2.7k 字
+          全文字数：3.2k 字
         
       </span>
     
@@ -257,7 +256,7 @@
         
         
           <!-- compatible with older versions-->
-          阅读耗时：23 分钟
+          阅读耗时：27 分钟
         
       </span>
     
@@ -303,75 +302,191 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">TVM实践(一)之TVM安装</h1>
+            <h1 style="display: none">神威日记2-作业管理</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="在Linux上从源码安装tvm"><a href="#在Linux上从源码安装tvm" class="headerlink" title="在Linux上从源码安装tvm"></a>在Linux上从源码安装tvm</h2><h3 id="1-拉取源码"><a href="#1-拉取源码" class="headerlink" title="1. 拉取源码"></a>1. 拉取源码</h3><p>先把源代码拉下来，注意使用<code>--recursive</code>可用来获取TVM的依赖(会下载到<code>tvm/3rdparty</code>目录下)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone <span class="token parameter variable">--recursive</span> https://github.com/apache/tvm tvm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>如果第三方依赖下载过慢，可以在<code>git clone</code>后，进入tvm目录执行下述<strong>命令:</strong></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> submodule init  
-<span class="token function">git</span> submodule update<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<h3 id="2-构建准备"><a href="#2-构建准备" class="headerlink" title="2.构建准备"></a>2.构建准备</h3><p>我们的目标是从源码编译得到<code>libtvm.so</code> 和 <code>libtvm_runtime.so</code>。</p>
-<h4 id="2-1-安装依赖"><a href="#2-1-安装依赖" class="headerlink" title="2.1 安装依赖"></a>2.1 安装依赖</h4><p>为保证构建过程顺利完成，我们还需要完成如下依赖的安装：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span>  gcc libtinfo-dev zlib1g-dev build-essential cmake libedit-dev libxml2-dev<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-<p>请确保<code>CMake version &gt;= 3.10 </code>。</p>
-<h4 id="2-2-选择构建工具"><a href="#2-2-选择构建工具" class="headerlink" title="2.2 选择构建工具"></a>2.2 选择构建工具</h4><p>为了更快地增量编译，我们选择使用<code>ninja</code>来进行构建，apt仓库的<code>ninja</code>已完全可用，安装可通过如下命令进行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ninja<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>安装完成后可通过<code>ninja --version</code>查看。</p>
-<h4 id="2-3-解决python环境"><a href="#2-3-解决python环境" class="headerlink" title="2.3 解决python环境"></a>2.3 解决python环境</h4><p>由于官方文档(0.9.dev0)指出tvm的Python目前仅支持3.8.X+ 和3.7.X+，因此，我们选择使用<code>conda</code>来创建tvm的python环境(conda安装请自行解决)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> tvm <span class="token assign-left variable">python</span><span class="token operator">=</span><span class="token number">3.8</span>
-<span class="token builtin class-name">source</span> activate tvm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
-
-<h3 id="3-构建配置"><a href="#3-构建配置" class="headerlink" title="3.构建配置"></a>3.构建配置</h3><h4 id="3-1自定义构建选项"><a href="#3-1自定义构建选项" class="headerlink" title="3.1自定义构建选项"></a>3.1自定义构建选项</h4><p>在<code>tvm</code>下创建好<code>build</code>目录，构建所需的配置文件可从<code>tvm/cmake/config.cmake</code>中拷贝。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> tvm 
-<span class="token function">mkdir</span> build 
-<span class="token function">cp</span> cmake/config.cmake build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>来自定义构建选项：</p>
+                <p>最近在摸索国产神威，对作业管理做一些简单记录。</p>
+<blockquote>
+<p>注： 本文所记录的是笔者用到以及认为之后可能会用到的命令及参数，完整支持建议查看《神威作业与资源管理用户手册》，结合<code>/usr/sw/bin</code>查看。</p>
+</blockquote>
+<h2 id="1-作业提交系统"><a href="#1-作业提交系统" class="headerlink" title="1. 作业提交系统"></a>1. 作业提交系统</h2><p><strong>众核环境采用作业提交的方式运行程序。用户需登录应用服务节点上进行课题的编辑、编译和作业的提交运行。</strong></p>
+<h3 id="1-1-作业基础"><a href="#1-1-作业基础" class="headerlink" title="1.1  作业基础"></a>1.1  作业基础</h3><ul>
+<li><p>作业：用户编写的经过编译后的在主机上运行的可执行程序。用户通过C、MPI等编程语言和环境，最终生成可执行程序，并将改可执行程序以作业的形式提交到指定的作业队列中调度运行。</p>
+</li>
+<li><p>作业ID：每道作业都有其唯一的作业ID（JOBID），是作业的唯一标识。</p>
+</li>
+<li><p>作业队列：队列是由管理员创建和管理的，由普通用户使用的上机门户，用户所有的课题以作业形式提交到某个队列中，再由队列调度运行。</p>
+</li>
+<li><p>计算节点：指一个操作核心。</p>
+</li>
+<li><p>计算节点编号：指每个操作系统核心所在的CPU编号。</p>
 <ul>
-<li><code>set(USE_CUDA ON)</code> 启用CUDA后端(需要本地安装CUDA&gt;&#x3D;8.0)</li>
-<li>启用<code>set(USE_GRAPH_EXECUTOR ON)</code>、<code>set(USE_PROFILER ON)</code>来帮助debug。</li>
-<li>如果需要debug IRS，则需要<code>set(USE_RELAY_DEBUG ON)</code>并设置环境变量<em>TVM_LOG_DEBUG</em>。  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LOG_DEBUG</span><span class="token operator">=</span><span class="token string">"ir/transform.cc=1,relay/ir/transform.cc=1"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure></li>
+<li>每个操作系统所在核心？什么意思</li>
 </ul>
-<h4 id="3-2-安装并启用llvm"><a href="#3-2-安装并启用llvm" class="headerlink" title="3.2 安装并启用llvm"></a>3.2 安装并启用llvm</h4><p>TVM 依赖 LLVM 用于 CPU 代码生成，官方强烈建议在进行构建的时候启用LLVM，且需要 <code>llvm version &gt;= 4.0</code>，而使用<code>apt</code>默认安装的会低于4.0，我们选择前往<a target="_blank" rel="noopener" href="https://releases.llvm.org/download.html">llvm官页</a>下载编译好的llvm包(Pre-Built Binaries)。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>编辑<code>build/config.cmake</code>，修改<code>set(USE_LLVM &lt;your_llvm_path&gt;/bin/llvm-config)</code>。<br>为了后续调试方便，您可以将llvm加入环境变量：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token string">"&lt;your_path>/llvm/bin:<span class="token environment constant">$PATH</span>"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-
-<h3 id="4-编译构建"><a href="#4-编译构建" class="headerlink" title="4.编译构建"></a>4.编译构建</h3><p>TVM 的默认配置是构建 RELEASE 版本的共享库。如果要构建 DEBUG 版本的，可以使用选项<code>-DCMAKE_BUILD_TYPE=Debug</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> build
-cmake <span class="token parameter variable">-DCMAKE_BUILD_TYPE</span><span class="token operator">=</span>Debug <span class="token parameter variable">-G</span> Ninja <span class="token punctuation">..</span>
-ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>编译成功后，生成的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>位于<code>build</code>目录下。</p>
-<p>查看生成的共享库是否是<code>DEBUG</code>版本，可在构建目录中执行如下命令，看是否有<code>with debug_info</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-shell-session" data-language="shell-session"><code class="language-shell-session"><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm.so </span></span>
-<span class="token output">libtvm.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=57549746b04cd3a7cb359e375db427e1b01a63a2, with debug_info, not stripped
-</span><span class="token command"><span class="token shell-symbol important">$</span> <span class="token bash language-bash"><span class="token function">file</span> libtvm_runtime.so </span></span>
-<span class="token output">libtvm_runtime.so: ELF 64-bit LSB shared object, x86-64, version 1 (GNU/Linux), dynamically linked, BuildID[sha1]=0101648081939d9d6b9498d47498121ecd2aba5b, with debug_info, not stripped</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
-
-<h3 id="5-安装tvmc-TVM命令行工具"><a href="#5-安装tvmc-TVM命令行工具" class="headerlink" title="5. 安装tvmc (TVM命令行工具)"></a>5. 安装tvmc (TVM命令行工具)</h3><h4 id="5-1-安装依赖"><a href="#5-1-安装依赖" class="headerlink" title="5.1 安装依赖"></a>5.1 安装依赖</h4><p>TVM命令行工具<code>tvmc</code>以python包形式存在于克隆的仓库目录<code>tvm/python/tvm/driver</code>下，我们需要安装如下依赖确保<code>tvmc</code>正常运行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">pip <span class="token function">install</span> numpy decorator attrs scipy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<h4 id="5-2-环境变量配置"><a href="#5-2-环境变量配置" class="headerlink" title="5.2 环境变量配置"></a>5.2 环境变量配置</h4><p>为了能使<code>tvmc</code>可以被正确加载，我们需要添加如下环境变量(可写入<code>~/.bashrc</code>等，请依shell类型确定)：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_HOME</span><span class="token operator">=</span><span class="token operator">&lt;</span>your_clone_path<span class="token operator">></span>/tvm
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">PYTHONPATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/python:<span class="token variable">$&#123;PYTHONPATH&#125;</span>
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">TVM_LIBRARY_PATH</span><span class="token operator">=</span><span class="token variable">$TVM_HOME</span>/build<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
-<p>注：</p>
+</li>
+</ul>
+<h3 id="1-2-任务与任务分布"><a href="#1-2-任务与任务分布" class="headerlink" title="1.2 任务与任务分布"></a>1.2 任务与任务分布</h3><ul>
+<li>主核任务：是一个作业的基本组成单元，是在一个指定的作业节点上执行的POSIX会话，通常是一个进程。(对于并行课题来说，就是<strong>用户作业运行过程中的进程</strong>)。</li>
+<li>任务分布模式：主核上使用的作业的所有任务都是由作业管理器启动的；在对任务编号时，作业管理将对每一个OS内的作业任务进程<strong>按照创建顺序进行编号</strong>。对于每个节点使用的CG以及从核，包含以下几种模式：<ul>
+<li>不使用从核模式。</li>
+<li>指定每个CG使用的从核数，<code>-cgsp</code>(<strong>需要&lt;&#x3D;64</strong>)。</li>
+<li>指定每主核使用CG数。<code>-mpecg</code>，默认为1，可选是1-6。</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-作业类型"><a href="#1-3-作业类型" class="headerlink" title="1.3 作业类型"></a>1.3 作业类型</h3><p>用户运行课题以作业的形式提交到指定的队列中，系统为每道作业分配唯一的作业ID，作业在队列中排队，接收作业管理系统的自动调度运行。运行时，根据作业所在的队列属性允许用户对作业进行人机交互控制，或由系统自动批处理。</p>
 <ul>
-<li>修改<code>PYTHONPATH</code>是为了<code>python</code>能找到<code>tvm.driver.tvmc</code>。</li>
-<li>添加环境变量<code>TVM_LIBRARY_PATH</code>是为了<code>tvmc</code>能找到所需的共享库<code>libtvm.so</code>和<code>libtvm_runtime.so</code>。</li>
+<li><p><strong>交互作业</strong></p>
+<ul>
+<li>用户在作业提交命令bsub命令中指定<code>-I</code>参数，选择交互作业服务模式。</li>
+<li>作业运行信息在终端窗口实时输出，允许用户进行各种人机交互控制。</li>
+<li>作业提交后，一旦交题窗口被意外关闭，作业则会自动转为脱机状态。</li>
+<li>此外在交互模式下若系统发现当前队列的空闲资源不能满足作业的资源需求时，作业将自动报错退出。</li>
 </ul>
-<p>我们可以重启shell或<code>source ~/.bashrc</code>使上述修改立即<strong>生效</strong>。</p>
-<h4 id="5-3运行与别名"><a href="#5-3运行与别名" class="headerlink" title="5.3运行与别名"></a>5.3运行与别名</h4><p>您可以通过下述命令来运行tvmc并查看帮助：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python3 <span class="token parameter variable">-m</span> tvm.driver.tvmc <span class="token parameter variable">--help</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>为了使用方便，我们可以为shell执行构建命令别名，您可将下述内容写入<code>~/.bashrc</code>：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">alias</span> <span class="token assign-left variable">tvmc</span><span class="token operator">=</span><span class="token string">'python3 -m tvm.driver.tvmc'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>生效后，我们就可以直接执行<code>tvmc</code>。</p>
-<h3 id="工作参考"><a href="#工作参考" class="headerlink" title="工作参考"></a>工作参考</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/">TVM官方手册</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/tvm">TVM项目源码</a></li>
-<li><a target="_blank" rel="noopener" href="https://csstormq.github.io/blog/TVM%20%E7%AF%87%EF%BC%881%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BB%8E%E6%BA%90%E7%A0%81%E6%9E%84%E5%BB%BA%E5%B9%B6%E5%AE%89%E8%A3%85%20TVM">在Ubuntu从源码构建和安装TVM</a></li>
+</li>
+<li><p><strong>批式作业：</strong></p>
+<ul>
+<li>用户在作业提交命令bsub命令中<strong>不指定</strong><code>-I</code>参数，则提交批式作业。</li>
+<li>作业提交后，窗口可以关闭，作业不受任何影响。</li>
+<li>结果输出保存在全局文件系统中，并且可以通过<code>-o</code>参数指定结果输出的文件。</li>
+<li>系统根据时机和资源情况自动运行作业。</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-相关命令"><a href="#2-相关命令" class="headerlink" title="2. 相关命令"></a>2. 相关命令</h2><p>命令中的符号说明：</p>
+<ul>
+<li><code>[ ]</code>：可选参数或元素。</li>
+<li><code>&lt; &gt;</code>：必须参数或元素，括号内容只对用户起提示说明作用，需要根据实际场景替换。</li>
+<li><code>|</code>：用于分割某元素或参数值的可选项，一般无特殊说明的情况下，只能多选一。</li>
+<li><code>...</code>：表示在命令中可以多次重复使用的参数或元素。</li>
+</ul>
+<h3 id="2-1-作业提交-bsub"><a href="#2-1-作业提交-bsub" class="headerlink" title="2.1 作业提交 bsub"></a>2.1 作业提交 bsub</h3><p><code>bsub [options] command [cmd_options]</code></p>
+<p>options是命令参数，commad通常是用户执行的命令簇(例如<code>python3 train.py</code>)之类。</p>
+<p>常用命令参数说明：</p>
+<ul>
+<li><code>-h</code> 显示帮助信息。</li>
+</ul>
+<h4 id="2-1-1-作业相关"><a href="#2-1-1-作业相关" class="headerlink" title="2.1.1 作业相关"></a>2.1.1 作业相关</h4><ul>
+<li><code>-I</code> 提交为交互式作业，无该项时为批式作业。</li>
+<li><code>-J</code> 指定作业名。</li>
+<li><code>-q</code> 向指定队列提交作业，<strong>必填项</strong>。<ul>
+<li>不同用户的可用队列及队列的资源、任务数等可以参见<code>qload -w</code>查看(详见<strong>qload</strong>节)。</li>
+</ul>
+</li>
+<li><code>-o</code>：奖作业的正常和异常输出定向到指定文件中。</li>
+</ul>
+<h4 id="2-1-2-算力相关"><a href="#2-1-2-算力相关" class="headerlink" title="2.1.2 算力相关"></a>2.1.2 算力相关</h4><ul>
+<li><code>-n</code> 指定运行所需要的主核数。</li>
+<li><code>-N</code> 指定运行所需要的节点数。<ul>
+<li>和下面的节点列表有什么关系？是否只需要一个？</li>
+</ul>
+</li>
+<li><code>-np</code> 指定每个节点内使用的主核数。</li>
+<li><code>-node</code> 指定运行作业的节点(node_id)列表。</li>
+<li><code>-master</code>：主任务模式。</li>
+<li><code>-mpecg</code>：指定每个主核使用的CG(核组)个数。</li>
+<li><code>-cgsp</code>：指定每个CG需要等从核数(<strong>需要&lt;&#x3D;64</strong>)。</li>
+<li><code>-cross</code>：要求分配全片CPU(6个主核的CPU)。</li>
+</ul>
+<h4 id="2-1-3-存储相关"><a href="#2-1-3-存储相关" class="headerlink" title="2.1.3 存储相关"></a>2.1.3 存储相关</h4><ul>
+<li><code>-b</code>：指定从核栈位于局存。<ul>
+<li>什么是局存？</li>
+</ul>
+</li>
+<li><code>-share_size</code>：指定所有进程的核组共享空间大小。</li>
+<li><code>-cross_size</code>：指定所有进程的交叉段大小。</li>
+<li><code>-ro_size</code>：指定所有进程的只读空间大小。</li>
+<li><code>host_stack</code>：指定所有进程的主核空间的栈空间大小。默认是8M。</li>
+</ul>
+<h4 id="2-1-4-加载器相关"><a href="#2-1-4-加载器相关" class="headerlink" title="2.1.4 加载器相关"></a>2.1.4 加载器相关</h4><ul>
+<li><code>-akernel</code>：Akernel 模式，不使用加载器。<ul>
+<li>加载器是什么意思？</li>
+</ul>
+</li>
+<li><code>-swrun</code>：指定使用特殊的加载器。</li>
+</ul>
+<h4 id="2-1-5-检测相关"><a href="#2-1-5-检测相关" class="headerlink" title="2.1.5 检测相关"></a>2.1.5 检测相关</h4><ul>
+<li><code>-perf</code>：打开性能监测功能。<ul>
+<li>目前暂无效果。</li>
+</ul>
+</li>
+<li><code>-perff</code>：使用指定配置文件进行作业的性能统计。</li>
+<li><code>-perf_float</code>：作业浮点性功能统计。</li>
+</ul>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#单节点 作业提交</span>
+bsub <span class="token parameter variable">-I</span> <span class="token parameter variable">-akernel</span> <span class="token parameter variable">-b</span> <span class="token parameter variable">-q</span> <span class="token variable">$your_queue_name</span> <span class="token parameter variable">-n</span> <span class="token number">1</span> <span class="token parameter variable">-node</span> <span class="token variable">$node_id</span> <span class="token parameter variable">-cgsp</span> <span class="token number">64</span> <span class="token parameter variable">-host_stack</span> <span class="token number">1024</span> <span class="token parameter variable">-ro_size</span> <span class="token number">256</span> <span class="token parameter variable">-cache_size</span> <span class="token number">0</span> <span class="token parameter variable">-share_size</span> <span class="token number">11500</span> python3 new_train.py
+
+<span class="token comment">#多节点 作业提交</span>
+bsub <span class="token parameter variable">-I</span> <span class="token parameter variable">-akernel</span> <span class="token parameter variable">-b</span> <span class="token parameter variable">-q</span> <span class="token variable">$your_queue_name</span> <span class="token parameter variable">-n</span> <span class="token variable">$node_num</span> <span class="token parameter variable">-node</span> <span class="token variable">$node_id</span> <span class="token parameter variable">-np</span> <span class="token number">1</span> <span class="token parameter variable">-mpecg</span> <span class="token number">2</span> <span class="token parameter variable">-cgsp</span> <span class="token number">64</span> <span class="token parameter variable">-host_stack</span> <span class="token number">1024</span> <span class="token parameter variable">-ro_size</span> <span class="token number">256</span> <span class="token parameter variable">-cache_size</span> <span class="token number">0</span> <span class="token parameter variable">-share_size</span> <span class="token number">11500</span> python3 new_train.py<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+
+
+<h3 id="2-2-作业查询-bjobs"><a href="#2-2-作业查询-bjobs" class="headerlink" title="2.2 作业查询 bjobs"></a>2.2 作业查询 bjobs</h3><p><code>bjobs  [options]</code></p>
+<ul>
+<li><code>jobID</code>：可选项，默认打印的是全部任务。</li>
+<li><code>-h</code>：查看帮助。</li>
+<li><code>-q</code>：指定队列，默认是显示有权限查看的全部队列。</li>
+<li><code>-w</code>：以表格模式显示(默认是简略表格，会省略长字段(比如job-name)，-w则完整显示)。</li>
+<li><code>-l</code>：列出作业的详细信息（<strong>非常有用</strong>），通常搭配<code>jobID</code>食用。<ul>
+<li>可以查看到 任务发起用户、任务状态、队列、任务完整的执行命令(Command)，提交机器，命令发起时所处目录(cwd)，作业类型，资源情况（cpu数、节点mep数、mpe的cg数等等）</li>
+</ul>
+</li>
+<li><code>-u</code>：列出指定用户<code>-u &lt;user_name&gt;</code>，列出所有用户<code>-u all</code> 但通常是没有权限的。</li>
+<li>特定状态作业显示：<ul>
+<li><code>-d</code>：显示正常退出的作业。</li>
+<li><code>-e</code>：显示错误退出的作业。<ul>
+<li>注：(无论是否正常)退出作业在几分钟后不可再查。</li>
+</ul>
+</li>
+<li><code>-p</code>：显示正在排队等待调度运行的作业。</li>
+<li><code>-r</code>：显示正在运行的作业。</li>
+</ul>
+</li>
+</ul>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#查询系统中指定队列中的作业</span>
+bjobs –u user-name <span class="token parameter variable">-q</span> qname<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+
+
+
+<h3 id="2-3-作业输出查询-bpeek"><a href="#2-3-作业输出查询-bpeek" class="headerlink" title="2.3 作业输出查询 bpeek"></a>2.3 作业输出查询 bpeek</h3><p> <code>bpeek [options] jobID</code></p>
+<ul>
+<li><code>-h</code> ：显示帮助信息。</li>
+<li><code>-f</code>： 持续显示作业的输出信息。</li>
+</ul>
+<h3 id="2-4-作业废除-bkill"><a href="#2-4-作业废除-bkill" class="headerlink" title="2.4 作业废除 bkill"></a>2.4 作业废除 bkill</h3><p><code>bkill [options]  </code></p>
+<ul>
+<li><code>-q &lt;queue&gt;</code>：指定作业队列。</li>
+<li><code>jobid</code>：指定作业id。</li>
+<li><code>-J &lt;jobName&gt;</code>：指定作业名称。</li>
+<li><code>-f</code>：强制废除作业，<strong>没有交互确认</strong>。</li>
+</ul>
+<p>特别说明：</p>
+<ul>
+<li>普通用户只能废除自己的作业，而管理员可以废除所有用户的作业。</li>
+<li>普通用户给定<code>-u &lt;自身用户名&gt;</code>则废除自己的所有作业。</li>
+<li>发出作业废除命令到作业真正被废除可能需要<strong>一定的时间间隔</strong>（2 分钟以内）。</li>
+<li>对于<strong>交互批作业</strong>（当前提交窗口可以看见作业输出），<strong>执行 ctrl+c</strong> 也可以终止作业， 效果相同。</li>
+</ul>
+<h3 id="2-5-登录超算节点"><a href="#2-5-登录超算节点" class="headerlink" title="2.5 登录超算节点"></a>2.5 登录超算节点</h3><p><code>szssh nodeID</code></p>
+<ul>
+<li><code>nodeID</code>：可通过<code>bjobs</code>查看自己任务所用到的节点。</li>
+</ul>
+<p>特别说明：</p>
+<ul>
+<li>登录需要密码(自找)，登录以后可以使用一些命令查看节点状态。(例如：top、free -h)</li>
+<li>对于大内存模式的机器，节点可查的内存<code>free -h</code>显示<code>2G</code>，<code>top (Shift+m 内存排序)</code>看到任务的往往**&gt;100%<strong>，这是由于大内存下共享的内存高达</strong>90GB<strong>，使用</strong>2G * 百分比**就是实际使用的内存。</li>
+</ul>
+<h2 id="工作参考"><a href="#工作参考" class="headerlink" title="工作参考"></a>工作参考</h2><ul>
+<li><p><a href="">众核环境使用说明(之江实验室-2022)</a></p>
+</li>
+<li><p><a href="">神威作业与资源管理用户手册(之江实验室-2022)</a></p>
+</li>
+<li><p>[神威基本操作(AIRobot-2019)](<a target="_blank" rel="noopener" href="https://airobots.win/page/26/">AIRobot (airobots.win)</a>)</p>
+</li>
+<li><p>师兄们和老师们的指导</p>
+</li>
 </ul>
 
                 
@@ -391,7 +506,7 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     
       <span class="category-chain">
         
-  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  <a href="/categories/%E7%A5%9E%E5%A8%81%E6%97%A5%E8%AE%B0/" class="category-chain-item">神威日记</a>
   
   
 
@@ -406,9 +521,7 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/TVM/">#TVM</a>
-      
-        <a href="/tags/Compiler/">#Compiler</a>
+        <a href="/tags/Sunway/">#Sunway</a>
       
     </div>
   
@@ -420,15 +533,15 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>TVM实践(一)之TVM安装</div>
-      <div>http://example.com/posts/86ceff4c/</div>
+      <div>神威日记2-作业管理</div>
+      <div>http://example.com/posts/90ba6669/</div>
     </div>
     <div class="license-meta">
       
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年7月26日</div>
+          <div>2023年9月3日</div>
         </div>
       
       
@@ -460,9 +573,9 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/posts/e9d4a39f/" title="Vim 学习整理">
+                      <a href="/posts/2f338cd1/" title="神威日记3-swpytorch初体验">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Vim 学习整理</span>
+                        <span class="hidden-mobile">神威日记3-swpytorch初体验</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -470,8 +583,8 @@ ninja <span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <article class="post-next col-6">
                     
                     
-                      <a href="/posts/71fcd42/" title="CPU并行编程模式">
-                        <span class="hidden-mobile">CPU并行编程模式</span>
+                      <a href="/posts/95fd9c0c/" title="神威日记1-Macbook登录">
+                        <span class="hidden-mobile">神威日记1-Macbook登录</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
