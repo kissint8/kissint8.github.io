@@ -1,0 +1,955 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="笔者近期的工作中，对Megatron-LM和PyTorch中权重的初始化方式产生了疑惑，尝试解读源码进行分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Megatron-LM中的权重初始化">
+<meta property="og:url" content="http://example.com/posts/76dfb04d/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="笔者近期的工作中，对Megatron-LM和PyTorch中权重的初始化方式产生了疑惑，尝试解读源码进行分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-01T07:32:00.000Z">
+<meta property="article:modified_time" content="2024-12-11T19:15:31.418Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Megatron-LM">
+<meta property="article:tag" content="PyTorch">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Megatron-LM中的权重初始化 - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Megatron-LM中的权重初始化"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-01 15:32" pubdate>
+          2024年12月1日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：7.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：59 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Megatron-LM中的权重初始化</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>现象描述：在某平台上上训练大模型时，受限于内存不够，需要使用模型并行。<br>例如模型结构：下采样(包含卷积等层)⇒SwinTransformer⇒ 上采样(包含卷积等)，Megatron-LM只对Transformer部分进行了初始化。<br>当tp&#x3D;6时，如果全部随机初始化权重，transformer层在不同rank上的权重是不同的(因为每个rank保持不同部分transformer权重)；但其他无法并行的层(例如卷积) (经打印验证) 在6个节点都保持了相同的初始化权重。<br>由此对Megatron-LM和PyTorch中权重的初始化方式产生了疑惑。</p>
+</blockquote>
+<h2 id="随机初始化"><a href="#随机初始化" class="headerlink" title="随机初始化"></a>随机初始化</h2><p>我们以torch.nn.Conv2d为例子，它的随机初始化定义在基类</p>
+<p><code>torch.nn.modules.conv._ConvNd</code> <a target="_blank" rel="noopener" href="https://caffe2.ai/doxygen-python/html/torch_2nn_2modules_2conv_8py_source.html">torch&#x2F;nn&#x2F;modules&#x2F;conv.py</a></p>
+<ul>
+<li>可以Google搜索：<a target="_blank" rel="noopener" href="http://cafe2.ai/">caffe2.ai</a>: xxxtorch api 来查找</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://caffe2.ai/doxygen-python/html/classtorch_1_1nn_1_1modules_1_1conv_1_1___conv_nd.html">Caffe2 - Python API: torch.nn.modules.conv._ConvNd Class Reference</a></p>
+<p>nn.Module是<strong>所有神经网络单元（neural network modules）的基类，其中负责初始化参数的函数是 reset_parameters(self)</strong></p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">_ConvNd</span><span class="token punctuation">(</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+ 
+  __constants__ <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'stride'</span><span class="token punctuation">,</span> <span class="token string">'padding'</span><span class="token punctuation">,</span> <span class="token string">'dilation'</span><span class="token punctuation">,</span> <span class="token string">'groups'</span><span class="token punctuation">,</span> <span class="token string">'bias'</span><span class="token punctuation">,</span> <span class="token string">'padding_mode'</span><span class="token punctuation">]</span>
+ 
+  <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> in_channels<span class="token punctuation">,</span> out_channels<span class="token punctuation">,</span> kernel_size<span class="token punctuation">,</span> stride<span class="token punctuation">,</span>
+               padding<span class="token punctuation">,</span> dilation<span class="token punctuation">,</span> transposed<span class="token punctuation">,</span> output_padding<span class="token punctuation">,</span>
+               groups<span class="token punctuation">,</span> bias<span class="token punctuation">,</span> padding_mode<span class="token punctuation">)</span><span class="token punctuation">:</span>
+      <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+      <span class="token keyword">if</span> transposed<span class="token punctuation">:</span>
+          self<span class="token punctuation">.</span>weight <span class="token operator">=</span> Parameter<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">(</span>
+              in_channels<span class="token punctuation">,</span> out_channels <span class="token operator">//</span> groups<span class="token punctuation">,</span> <span class="token operator">*</span>kernel_size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">else</span><span class="token punctuation">:</span>
+          self<span class="token punctuation">.</span>weight <span class="token operator">=</span> Parameter<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">(</span>
+              out_channels<span class="token punctuation">,</span> in_channels <span class="token operator">//</span> groups<span class="token punctuation">,</span> <span class="token operator">*</span>kernel_size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">if</span> bias<span class="token punctuation">:</span>
+          self<span class="token punctuation">.</span>bias <span class="token operator">=</span> Parameter<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">(</span>out_channels<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">else</span><span class="token punctuation">:</span>
+          self<span class="token punctuation">.</span>register_parameter<span class="token punctuation">(</span><span class="token string">'bias'</span><span class="token punctuation">,</span> <span class="token boolean">None</span><span class="token punctuation">)</span>
+      <span class="token operator">**</span>self<span class="token punctuation">.</span>reset_parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">**</span>
+      <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token keyword">def</span> <span class="token function">reset_parameters</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+      n <span class="token operator">=</span> self<span class="token punctuation">.</span>in_channels
+      init<span class="token punctuation">.</span>kaiming_uniform_<span class="token punctuation">(</span>self<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> a<span class="token operator">=</span>math<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">if</span> self<span class="token punctuation">.</span>bias <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+          fan_in<span class="token punctuation">,</span> _ <span class="token operator">=</span> init<span class="token punctuation">.</span>_calculate_fan_in_and_fan_out<span class="token punctuation">(</span>self<span class="token punctuation">.</span>weight<span class="token punctuation">)</span>
+          bound <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">/</span> math<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>fan_in<span class="token punctuation">)</span>
+          init<span class="token punctuation">.</span>uniform_<span class="token punctuation">(</span>self<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token operator">-</span>bound<span class="token punctuation">,</span> bound<span class="token punctuation">)</span>
+          <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>可以看到，随机参数的初始化分为如下两个步骤：</p>
+<ul>
+<li><p>self.weight &#x3D; Parameter( torch.Tensor(out_channels, in_channels &#x2F;&#x2F; group, **kernel_size ) )</p>
+<p>  self.bias &#x3D;  Parameter(torch.Tensor(out_channels))</p>
+<p>  这里torch.nn.Parameter 继承自 torch.Tensor，使用Parameter创建的张量：</p>
+<ul>
+<li>会自动设置 requires_grad 为True。</li>
+<li>会将该变量加入到 模型的named_parameters当中。</li>
+</ul>
+<p>  当然，如果没有
+  </p>
+</li>
+<li><p>reset_parameters 对 self.weight 和 self.bias进行重制。</p>
+<ul>
+<li>weight初始化： init.kaiming_uniform_(self.weight, a&#x3D;math.sqrt(5))，这里使用的是HE初始化(凯明何的初始化)的<strong>均匀分布</strong>采样，采样的bound：</li>
+</ul>
+<p>  $$<br>  bound&#x3D;\sqrt{\frac{6}{(1+a)^2\times fan_{in}}}<br>  $$</p>
+<p>  其中fan_{in} 是输入神经元数量，输入通道 x 卷积大小K^2</p>
+<ul>
+<li>bias初始化：首先根据weight来计算fan_in和fan_out，然后用</li>
+</ul>
+<p>  $$<br>  bound&#x3D;\sqrt{\frac{1}{fan_{in}}}<br>  $$</p>
+<p>  采用均匀分布进行采样。</p>
+<p>  这里，bias和weight都在相同的采样区间里，采用均匀分布来采样。</p>
+<p>  关于torch.nn.init中的采样方法，可以参见blog：</p>
+<p>  <a target="_blank" rel="noopener" href="https://blog.csdn.net/imblackcat/article/details/131473894">https://blog.csdn.net/imblackcat/article/details/131473894</a></p>
+</li>
+</ul>
+<p>那么我们来关注另一个问题，有了初始化方法，它又是怎么同随机种子相关联的？</p>
+<p>首先，megatron的随机种子是在args.seed参数来设置的，默认1234。</p>
+<p>但实际设置时，采用了函数_set_random_seed</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">_set_random_seed</span><span class="token punctuation">(</span>seed_<span class="token punctuation">,</span> data_parallel_random_init<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Set random seed for reproducability."""</span>
+    <span class="token keyword">if</span> seed_ <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span> <span class="token keyword">and</span> seed_ <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># Ensure that different pipeline MP stages get different seeds.</span>
+        seed <span class="token operator">=</span> seed_ <span class="token operator">+</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">*</span> mpu<span class="token punctuation">.</span>get_pipeline_model_parallel_rank<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token comment"># Ensure different data parallel ranks get different seeds</span>
+        <span class="token keyword">if</span> data_parallel_random_init<span class="token punctuation">:</span>
+            seed <span class="token operator">=</span> seed <span class="token operator">+</span> <span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">*</span> mpu<span class="token punctuation">.</span>get_data_parallel_rank<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        random<span class="token punctuation">.</span>seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+        np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+        torch<span class="token punctuation">.</span>manual_seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> torch<span class="token punctuation">.</span>cuda<span class="token punctuation">.</span>device_count<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+            tensor_parallel<span class="token punctuation">.</span>model_parallel_cuda_manual_seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">'Seed (&#123;&#125;) should be a positive integer.'</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>seed<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>这里有些细节：</p>
+<ul>
+<li>流水线并行组各rank上的seed是不同的，那么流水线并行不同rank上 <strong>哪怕是未切分的层也是不同的随机参数。 但是这保证了 不同Transformer层的权重是不一样的。</strong></li>
+<li>首先，默认情况下，<strong>不同的流水线阶段 之间的 种子是不一样的，容易理解 不同transformer层的初始化种子不一致。</strong></li>
+<li>可选的，可以让不同数据对应的模型副本采用不同的随机初始化方法。</li>
+<li>设置了三种种子：<ul>
+<li>random.seed：影响random.random… random.randint等</li>
+<li>np.random.seed：影响np.random.rand()、np.random.randn()等</li>
+<li>torch.manual_seed：影响torch.rand()、torch.randn()和torch.randint()等。</li>
+</ul>
+</li>
+</ul>
+<p>这意味着：</p>
+<ul>
+<li><p>张量并行组的各rank上的seed是相同的，也就意味着 随机发生器所生成的随机序列是确定的，<strong>对于非切分的层，对应层的初始化参数是完全相同的</strong>。</p>
+<ul>
+<li>但是不同次序组织的层，哪怕相同规模和设置，由于随机生成的发生次序不一样，因此彼此之间随机参数不同。</li>
+<li>而不同规模或者类型的层，哪怕两次运行位于相同的随机次序上，由于采样的范围、采样的方法不同，生成的随机参数也是不一样的。</li>
+<li>实验证明，torch.init..随机方法，每次会消耗一个随机生成器产生的随机状态，比如在一个卷积层中，初始化了两个参数，消耗了两个随机状态， 下一个卷积或者层的初始化参数会使用第三个状态。 那么，我们可以用两个torch.init.去替代第一个卷积，保证下一个卷积生成的随机参数还是相同的。<ul>
+<li><p>代码折叠&#x2F;展看</p>
+  <figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> torch
+<span class="token keyword">import</span> random
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+seed<span class="token operator">=</span><span class="token number">1234</span>
+
+random<span class="token punctuation">.</span>seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+torch<span class="token punctuation">.</span>manual_seed<span class="token punctuation">(</span>seed<span class="token punctuation">)</span>
+
+<span class="token comment">#base和1_1 都能保证bias生成相同, layer2weight相同·</span>
+<span class="token comment">#layer1 = torch.nn.Conv2d(10, 10, kernel_size=4) #bias shape: c_out 10, weight shape (c_out, c_in, k1, k2) = 1600, base  </span>
+<span class="token comment">#layer1 = torch.nn.Conv2d(40, 10, kernel_size=2) #1_1 bias shape: c_out 10, weight shape (10,40, 2,2) = 1600,相同bias采样范围, 相同的采样数量</span>
+
+layer1 <span class="token operator">=</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>Conv2d<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> kernel_size<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>   <span class="token comment">#1_2 对照组，不同的采样范围和采样数量,但是layer2的权重相同</span>
+
+<span class="token comment">#猜测，一次完整采样用一个随机生成的东东</span>
+<span class="token comment"># 那加了layer3 和 两次随机采样应该是等效的，看layer2的weight是相同的</span>
+<span class="token comment">#layer3 = torch.nn.Conv2d(20, 10, kernel_size=2) </span>
+
+<span class="token comment">#weight = torch.ones([10,20,2,2])</span>
+<span class="token comment">#bias = torch.ones([1,10])</span>
+<span class="token comment">#torch.nn.init.kaiming_uniform_(weight)</span>
+<span class="token comment">#torch.nn.init.uniform_(bias)</span>
+<span class="token comment">#</span>
+<span class="token comment">##进一步测试 增加一行bias的uniform，layer2的权重应该会有变化</span>
+<span class="token comment">#bias2 = torch.ones([1,10])</span>
+<span class="token comment">#torch.nn.init.uniform_(bias2)</span>
+
+<span class="token comment">##再进一步测试，使用两次init_uniform_，让layer2保持相同</span>
+<span class="token comment">#bias2 = torch.ones([1,10])</span>
+<span class="token comment">#torch.nn.init.uniform_(bias2)</span>
+<span class="token comment">#torch.nn.init.uniform_(bias2)</span>
+
+layer2 <span class="token operator">=</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>Conv2d<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span> kernel_size<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>
+
+<span class="token comment">#same_weight = torch.equal(layer1.weight,layer2.weight)</span>
+<span class="token comment">#same_bias = torch.equal(layer1.bias, layer2.bias)</span>
+
+<span class="token comment">#print(f"weight same is &#123;same_weight&#125;, bias same is &#123;same_bias&#125;")</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"layer1.bias </span><span class="token interpolation"><span class="token punctuation">&#123;</span>layer1<span class="token punctuation">.</span>bias<span class="token punctuation">&#125;</span></span><span class="token string">, layer2.weight </span><span class="token interpolation"><span class="token punctuation">&#123;</span>layer2<span class="token punctuation">.</span>weight<span class="token punctuation">&#125;</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure></li>
+</ul>
+</li>
+</ul>
+<p>  (我们可以尝试，在随机生成参数时，让并行卷积层在相同的随机生成次序上，在相同采样范围和采样方法？ )</p>
+</li>
+</ul>
+<p>那么对于张量并行，位于不同rank上的切分的层，是如何实现权重不同的？</p>
+<p>我们可以在<code>megatron-sw/megatron/core/tensor_parallel/layers.py</code> 当中ColumnParallelLinear或者 RowParallelLinear找到答案：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">if</span> use_cpu_initialization<span class="token punctuation">:</span>
+    self<span class="token punctuation">.</span>weight <span class="token operator">=</span> Parameter<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>empty<span class="token punctuation">(</span>self<span class="token punctuation">.</span>output_size<span class="token punctuation">,</span>
+                                        self<span class="token punctuation">.</span>input_size_per_partition<span class="token punctuation">,</span>
+                                        dtype<span class="token operator">=</span>params_dtype<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> perform_initialization<span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>master_weight <span class="token operator">=</span> _initialize_affine_weight_cpu<span class="token punctuation">(</span>
+            self<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> self<span class="token punctuation">.</span>output_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>input_size<span class="token punctuation">,</span>
+            self<span class="token punctuation">.</span>input_size_per_partition<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> init_method<span class="token punctuation">,</span>
+            stride<span class="token operator">=</span>stride<span class="token punctuation">,</span> return_master_weight<span class="token operator">=</span>keep_master_weight_for_test<span class="token punctuation">,</span>
+            params_dtype<span class="token operator">=</span>params_dtype<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>对于weight而言，生成的是一个列被切分后大小，cpu初始化的话，这里还有一个master_weight</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">_initialize_affine_weight_cpu</span><span class="token punctuation">(</span>weight<span class="token punctuation">,</span> output_size<span class="token punctuation">,</span> input_size<span class="token punctuation">,</span>
+                                  per_partition_size<span class="token punctuation">,</span> partition_dim<span class="token punctuation">,</span>
+                                  init_method<span class="token punctuation">,</span> stride<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>
+                                  return_master_weight<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+                                  <span class="token operator">*</span><span class="token punctuation">,</span> params_dtype<span class="token operator">=</span>torch<span class="token punctuation">.</span>float32<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Initialize affine weight for model parallel.
+
+    Build the master weight on all processes and scatter
+    the relevant chunk."""</span>
+
+    set_tensor_model_parallel_attributes<span class="token punctuation">(</span>tensor<span class="token operator">=</span>weight<span class="token punctuation">,</span>
+                                         is_parallel<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                                         dim<span class="token operator">=</span>partition_dim<span class="token punctuation">,</span>
+                                         stride<span class="token operator">=</span>stride<span class="token punctuation">)</span>
+
+    <span class="token comment"># Initialize master weight</span>
+    master_weight <span class="token operator">=</span> torch<span class="token punctuation">.</span>empty<span class="token punctuation">(</span>output_size<span class="token punctuation">,</span> input_size<span class="token punctuation">,</span>
+                                dtype<span class="token operator">=</span>torch<span class="token punctuation">.</span><span class="token builtin">float</span><span class="token punctuation">,</span>
+                                requires_grad<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+    init_method<span class="token punctuation">(</span>master_weight<span class="token punctuation">)</span>
+    master_weight <span class="token operator">=</span> master_weight<span class="token punctuation">.</span>to<span class="token punctuation">(</span>dtype<span class="token operator">=</span>params_dtype<span class="token punctuation">)</span>
+
+    <span class="token comment"># Split and copy</span>
+    per_partition_per_stride_size <span class="token operator">=</span> divide<span class="token punctuation">(</span>per_partition_size<span class="token punctuation">,</span> stride<span class="token punctuation">)</span>
+    weight_list <span class="token operator">=</span> torch<span class="token punctuation">.</span>split<span class="token punctuation">(</span>master_weight<span class="token punctuation">,</span> per_partition_per_stride_size<span class="token punctuation">,</span>
+                              dim<span class="token operator">=</span>partition_dim<span class="token punctuation">)</span>
+    rank <span class="token operator">=</span> get_tensor_model_parallel_rank<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    world_size <span class="token operator">=</span> get_tensor_model_parallel_world_size<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    my_weight_list <span class="token operator">=</span> weight_list<span class="token punctuation">[</span>rank<span class="token punctuation">:</span><span class="token punctuation">:</span>world_size<span class="token punctuation">]</span>
+
+    <span class="token keyword">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        torch<span class="token punctuation">.</span>cat<span class="token punctuation">(</span>my_weight_list<span class="token punctuation">,</span> dim<span class="token operator">=</span>partition_dim<span class="token punctuation">,</span> out<span class="token operator">=</span>weight<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> return_master_weight<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> master_weight
+    <span class="token keyword">return</span> <span class="token boolean">None</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>这里可以看到，创建了一个master_weight权重副本，然后对它进行了切分，根据rank来返回不同的weight_list切片<code>weight_list[rank::world_size]</code>，这里的start&#x3D;rank,step&#x3D;world_size. 貌似是比较安全的写法？但如果 切分份数就是world_size的情况下，显然是取 了rank对应的权重切片。</p>
+<p>然后再将本rank的切片weight重新用cat的方式组织，覆盖写回weight当中。</p>
+<p>但是在gpu版本的初始化中，是直接对weight进行了初始化。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">_initialize_affine_weight_gpu</span><span class="token punctuation">(</span>weight<span class="token punctuation">,</span> init_method<span class="token punctuation">,</span>
+                                  partition_dim<span class="token punctuation">,</span> stride<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""Initialize affine weight for model parallel on GPU."""</span>
+
+    set_tensor_model_parallel_attributes<span class="token punctuation">(</span>tensor<span class="token operator">=</span>weight<span class="token punctuation">,</span>
+                                         is_parallel<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>
+                                         dim<span class="token operator">=</span>partition_dim<span class="token punctuation">,</span>
+                                         stride<span class="token operator">=</span>stride<span class="token punctuation">)</span>
+    <span class="token keyword">with</span> get_cuda_rng_tracker<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fork<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        init_method<span class="token punctuation">(</span>weight<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>这里保证了每个gpu(哪怕在随机种子相同的情况下)单独创建一个互不相同的独立RNG状态，保证彼此之间生成的是不一样的。</p>
+<p>总结下，张量并行初始化线性层参数的过程：</p>
+<p>GPU上，通过fork一个rng状态， 让不同GPU分别产生不同的随机参数；</p>
+<p>CPU上，通过大家同时生成一个大的相同的随机参数副本，然后根据张量并行rank来选择不同的切片作为自己的随机参数。</p>
+<p>张量并行中，(非切分)层的随机初始化过程是完全一致的，因为不同节点的种子一样，随机初始化的次序也相同。</p>
+<p>但是流水线并行，会在megatron设置随机种子时，让不同流水线阶段rank的随机种子不同。</p>
+<p>参考博客：<a target="_blank" rel="noopener" href="https://www.mltalks.com/posts/2207923116/">Megatron-LM源码系列(一)：模型并行初始化 | MLTalks</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AD%A6%E4%B9%A0%E5%BD%92%E7%BA%B3/" class="category-chain-item">学习归纳</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Megatron-LM/">#Megatron-LM</a>
+      
+        <a href="/tags/PyTorch/">#PyTorch</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Megatron-LM中的权重初始化</div>
+      <div>http://example.com/posts/76dfb04d/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/e077a574/" title="Matlab 命令行安装">
+                        <span class="hidden-mobile">Matlab 命令行安装</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>
