@@ -13,7 +13,7 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>保住饭碗</category>
       
     </categories>
     
@@ -23,6 +23,8 @@
       <tag>Megatron-LM</tag>
       
       <tag>PyTorch</tag>
+      
+      <tag>深度学习</tag>
       
     </tags>
     
@@ -40,12 +42,14 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>运维苦海</category>
       
     </categories>
     
     
     <tags>
+      
+      <tag>Ubuntu</tag>
       
       <tag>Matlab</tag>
       
@@ -65,14 +69,12 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
-      
-      <tag>Sunway</tag>
       
       <tag>vscode</tag>
       
@@ -92,7 +94,7 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>常看常新</category>
       
     </categories>
     
@@ -100,8 +102,6 @@
     <tags>
       
       <tag>Git</tag>
-      
-      <tag>Linux</tag>
       
     </tags>
     
@@ -119,7 +119,7 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>常看常新</category>
       
     </categories>
     
@@ -128,8 +128,6 @@
       
       <tag>Vim</tag>
       
-      <tag>Linux</tag>
-      
     </tags>
     
   </entry>
@@ -137,7 +135,7 @@
   
   
   <entry>
-    <title>TVM实践(一)之TVM安装</title>
+    <title>TVM安装</title>
     <link href="/posts/86ceff4c/"/>
     <url>/posts/86ceff4c/</url>
     
@@ -146,16 +144,16 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>TVM</tag>
+      <tag>深度学习</tag>
       
-      <tag>Compiler</tag>
+      <tag>TVM</tag>
       
     </tags>
     
@@ -164,7 +162,7 @@
   
   
   <entry>
-    <title>CPU并行编程模式</title>
+    <title>openMP简记</title>
     <link href="/posts/71fcd42/"/>
     <url>/posts/71fcd42/</url>
     
@@ -173,20 +171,16 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>常看常新</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>CPU</tag>
-      
-      <tag>parallel</tag>
-      
       <tag>openMP</tag>
       
-      <tag>Matrix Factorization</tag>
+      <tag>并行程序</tag>
       
     </tags>
     
@@ -195,7 +189,7 @@
   
   
   <entry>
-    <title>记博客迁移</title>
+    <title>记博客迁移----乔迁之喜</title>
     <link href="/posts/bfd9c6dc/"/>
     <url>/posts/bfd9c6dc/</url>
     
@@ -204,7 +198,7 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>重要时刻</category>
       
     </categories>
     
@@ -212,6 +206,8 @@
     <tags>
       
       <tag>Hexo</tag>
+      
+      <tag>博客部署</tag>
       
     </tags>
     
@@ -229,16 +225,16 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>常看常新</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>Anaconda</tag>
+      <tag>深度学习</tag>
       
-      <tag>Conda</tag>
+      <tag>Anaconda</tag>
       
       <tag>Python</tag>
       
@@ -258,14 +254,14 @@
     
     <categories>
       
-      <category>学习归纳</category>
+      <category>常看常新</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>Tensorflow</tag>
+      <tag>深度学习</tag>
       
       <tag>GPU</tag>
       
@@ -285,20 +281,14 @@
     
     <categories>
       
-      <category>技术尝鲜</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>CentOS8</tag>
-      
-      <tag>YaCy</tag>
-      
-      <tag>P2P</tag>
-      
-      <tag>搜索引擎</tag>
+      <tag>CentOS</tag>
       
     </tags>
     
@@ -316,18 +306,16 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>NCL</tag>
-      
       <tag>Ubuntu</tag>
       
-      <tag>conda</tag>
+      <tag>NCL</tag>
       
     </tags>
     
@@ -345,18 +333,14 @@
     
     <categories>
       
-      <category>技术尝鲜</category>
+      <category>运维苦海</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>CentOS8</tag>
-      
-      <tag>Cockpit</tag>
-      
-      <tag>运维</tag>
+      <tag>CentOS</tag>
       
     </tags>
     
@@ -374,18 +358,16 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>运维苦海</category>
       
     </categories>
     
     
     <tags>
       
+      <tag>CentOS</tag>
+      
       <tag>Django</tag>
-      
-      <tag>CentOS8</tag>
-      
-      <tag>Nginx</tag>
       
     </tags>
     
@@ -403,16 +385,14 @@
     
     <categories>
       
-      <category>问题记录</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>Centos8</tag>
-      
-      <tag>dnf</tag>
+      <tag>CentOS</tag>
       
     </tags>
     
@@ -430,7 +410,7 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>助人为乐</category>
       
     </categories>
     
@@ -438,10 +418,6 @@
     <tags>
       
       <tag>Django</tag>
-      
-      <tag>开发</tag>
-      
-      <tag>跨域</tag>
       
     </tags>
     
@@ -459,7 +435,7 @@
     
     <categories>
       
-      <category>问题记录</category>
+      <category>助人为乐</category>
       
     </categories>
     
@@ -467,8 +443,6 @@
     <tags>
       
       <tag>微信小程序</tag>
-      
-      <tag>ssl</tag>
       
     </tags>
     
@@ -486,7 +460,7 @@
     
     <categories>
       
-      <category>问题记录</category>
+      <category>助人为乐</category>
       
     </categories>
     
@@ -494,8 +468,6 @@
     <tags>
       
       <tag>Git</tag>
-      
-      <tag>开发</tag>
       
     </tags>
     
@@ -513,7 +485,7 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>助人为乐</category>
       
     </categories>
     
@@ -521,8 +493,6 @@
     <tags>
       
       <tag>Git</tag>
-      
-      <tag>开发</tag>
       
     </tags>
     
@@ -540,14 +510,12 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>助人为乐</category>
       
     </categories>
     
     
     <tags>
-      
-      <tag>汇编</tag>
       
       <tag>DosBox</tag>
       
@@ -567,18 +535,16 @@
     
     <categories>
       
-      <category>经验整理</category>
+      <category>运维苦海</category>
       
     </categories>
     
     
     <tags>
       
-      <tag>CentOS7</tag>
+      <tag>CentOS</tag>
       
       <tag>Django</tag>
-      
-      <tag>Apache</tag>
       
     </tags>
     
