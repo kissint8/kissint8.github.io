@@ -23,13 +23,13 @@
 <meta property="og:site_name" content="云海仙泽">
 <meta property="og:description" content="Cockpit是一款轻量级的web运维管理系统，部署简单，功能丰富。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/Cockpit.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/18/NljOGPkJhxWeB8z.png">
 <meta property="article:published_time" content="2020-03-02T03:32:00.000Z">
-<meta property="article:modified_time" content="2024-12-17T13:06:51.869Z">
+<meta property="article:modified_time" content="2024-12-17T18:14:34.838Z">
 <meta property="article:author" content="云越泽">
 <meta property="article:tag" content="CentOS">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/Cockpit.png">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/18/NljOGPkJhxWeB8z.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -209,7 +209,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+     style="background: url('https://s2.loli.net/2024/12/18/3lS4CwvO2suQREj.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -520,6 +520,12 @@ firewall-cmd <span class="token parameter variable">--reload</span><span aria-hi
   
 
 
+  
+  
+
+
+
+
 
 
 
@@ -737,6 +743,49 @@ firewall-cmd <span class="token parameter variable">--reload</span><span aria-hi
 
 
   <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
 
   <script  src="/js/local-search.js" ></script>
 

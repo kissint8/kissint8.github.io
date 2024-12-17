@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="云海仙泽">
 <meta property="og:description" content="笔者通过阿里云的学生&quot;在家实践计划&quot;获得了一台2核4G的云ECS实例，安装了Centos8镜像,并尝试部署一套后端管理生产环境(LNMP+Django)。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/nginx.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/18/EG81RWNbkr5ZcIF.jpg">
 <meta property="article:published_time" content="2020-02-06T10:45:00.000Z">
-<meta property="article:modified_time" content="2024-12-17T13:12:15.453Z">
+<meta property="article:modified_time" content="2024-12-17T18:08:12.152Z">
 <meta property="article:author" content="云越泽">
 <meta property="article:tag" content="CentOS">
 <meta property="article:tag" content="Django">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/nginx.png">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/18/EG81RWNbkr5ZcIF.jpg">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -210,7 +210,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+     style="background: url('https://s2.loli.net/2024/12/18/3lS4CwvO2suQREj.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -687,6 +687,12 @@ uwsgi <span class="token parameter variable">--ini</span> myproject.ini<span ari
   
 
 
+  
+  
+
+
+
+
 
 
 
@@ -904,6 +910,49 @@ uwsgi <span class="token parameter variable">--ini</span> myproject.ini<span ari
 
 
   <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
 
   <script  src="/js/local-search.js" ></script>
 

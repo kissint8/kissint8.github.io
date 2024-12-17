@@ -206,7 +206,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back_about.png') no-repeat center center; background-size: cover;">
+     style="background: url('https://s2.loli.net/2024/12/18/591v4u6DNQHfYLV.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -235,7 +235,7 @@
           >
           
             <div class="about-avatar">
-              <img src="https://yunyueze-1256877396.file.myqcloud.com/img/favour.png" srcset="/img/loading.gif" lazyload class="img-fluid" alt="avatar">
+              <img src="https://s2.loli.net/2024/12/18/y9z1VtXlAx4vs8H.png" srcset="/img/loading.gif" lazyload class="img-fluid" alt="avatar">
             </div>
           
           <div class="container">
@@ -355,6 +355,12 @@
 
 
   
+
+
+  
+  
+
+
 
 
 
@@ -537,6 +543,49 @@
 
 
   <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
 
   <script  src="/js/local-search.js" ></script>
 

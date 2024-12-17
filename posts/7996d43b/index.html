@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="云海仙泽">
 <meta property="og:description" content="继NCL更新到6.6以后,官网给出了很方便的conda安装方式，笔者在此整理了一下自己的安装思路。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/post/ncl.png">
+<meta property="og:image" content="https://s2.loli.net/2024/12/18/u5GyxFS3CXYtrUL.jpg">
 <meta property="article:published_time" content="2020-03-03T14:15:00.000Z">
-<meta property="article:modified_time" content="2024-12-17T13:11:52.998Z">
+<meta property="article:modified_time" content="2024-12-17T18:10:09.321Z">
 <meta property="article:author" content="云越泽">
 <meta property="article:tag" content="Ubuntu">
 <meta property="article:tag" content="NCL">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/post/ncl.png">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/18/u5GyxFS3CXYtrUL.jpg">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -210,7 +210,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+     style="background: url('https://s2.loli.net/2024/12/18/3lS4CwvO2suQREj.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -327,7 +327,8 @@
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">conda create <span class="token parameter variable">-n</span> ncl_stable <span class="token parameter variable">-c</span> conda-forge ncl<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 <p>等上面步骤结束后，按照提示激活环境</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">source</span> activate ncl_stable<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
-<p>试着跑一份代码，正常得到图形结果，说明安装成功。<br><img src="https://img-blog.csdnimg.cn/20200303180831758.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><img src="https://img-blog.csdnimg.cn/20200303181222377.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2wxMTc1ODMyMzY2,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>试着跑一份代码，正常得到图形结果，说明安装成功。<br><img src="https://img-blog.csdnimg.cn/20200303180831758.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://s2.loli.net/2024/12/18/XGgqDEYI7fc3ORP.png" srcset="/img/loading.gif" lazyload></p>
 <h2 id="3-使用ncl"><a href="#3-使用ncl" class="headerlink" title="3.使用ncl"></a>3.使用ncl</h2><p>此后每次在终端中使用时:</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">##激活环境</span>
 <span class="token builtin class-name">source</span> activate ncl_stable
@@ -520,6 +521,12 @@
 
 
   
+
+
+  
+  
+
+
 
 
 
@@ -739,6 +746,49 @@
 
 
   <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
 
   <script  src="/js/local-search.js" ></script>
 

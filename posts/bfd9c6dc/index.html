@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="云海仙泽">
 <meta property="og:description" content="笔者近期的主力平台迁移到了实验室的一台Ubuntu主机，故而需要对博客进行迁移。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/img/article/3/hexo.jpg">
+<meta property="og:image" content="https://s2.loli.net/2024/12/18/N7GOaIyfQjKE4ro.jpg">
 <meta property="article:published_time" content="2022-03-19T11:03:00.000Z">
-<meta property="article:modified_time" content="2024-12-17T13:10:26.611Z">
+<meta property="article:modified_time" content="2024-12-17T17:46:25.471Z">
 <meta property="article:author" content="云越泽">
 <meta property="article:tag" content="Hexo">
 <meta property="article:tag" content="博客部署">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/img/article/3/hexo.jpg">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/18/N7GOaIyfQjKE4ro.jpg">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -210,7 +210,7 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('https://yunyueze-1256877396.file.myqcloud.com/img/back.png') no-repeat center center; background-size: cover;">
+     style="background: url('https://s2.loli.net/2024/12/18/3lS4CwvO2suQREj.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
@@ -382,7 +382,7 @@ hexo init<span aria-hidden="true" class="line-numbers-rows"><span></span><span><
 <span class="token key attr-name">Categories</span><span class="token punctuation">=</span><span class="token value attr-value">Internet</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>保存文件后，即可在应用中搜索到<code>Tecent_COS_Browser</code>，可以将其放到桌面或固定到收藏栏。</p>
-<h3 id="3-3-设置图片目录同步"><a href="#3-3-设置图片目录同步" class="headerlink" title="3.3 设置图片目录同步"></a>3.3 设置图片目录同步</h3><p>打开<code>Tecent_COS_Browser</code>，登陆以后，单击界面右上方的<strong>工具箱&gt;文件同步</strong>，参照下图进行配置：<br><img src="//yunyueze-1256877396.cos.ap-nanjing.myqcloud.com/img/article/3/tongbu.png" srcset="/img/loading.gif" lazyload alt="tongbu"><br>自动同步设置完成后，每次图片目录的变动都将直接同步覆盖到腾讯云的存储桶中。</p>
+<h3 id="3-3-设置图片目录同步"><a href="#3-3-设置图片目录同步" class="headerlink" title="3.3 设置图片目录同步"></a>3.3 设置图片目录同步</h3><p>打开<code>Tecent_COS_Browser</code>，登陆以后，单击界面右上方的<strong>工具箱&gt;文件同步</strong>，参照下图进行配置：<br><img src="https://s2.loli.net/2024/12/18/OcsArZVbJKNgaRi.png" srcset="/img/loading.gif" lazyload><br>自动同步设置完成后，每次图片目录的变动都将直接同步覆盖到腾讯云的存储桶中。</p>
 <h2 id="4-博客项目运行"><a href="#4-博客项目运行" class="headerlink" title="4.博客项目运行"></a>4.博客项目运行</h2><h3 id="4-1-本地测试"><a href="#4-1-本地测试" class="headerlink" title="4.1 本地测试"></a>4.1 本地测试</h3><p>每次执行<code>hexo clean</code> 清除<code>public</code>的内容，执行<code>hexo g</code>生成静态资源，执行<code>hexo s</code>进行本地服务部署，而后可打开<code>localhost:4000</code>查看。</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">hexo clean <span class="token operator">&amp;&amp;</span> hexo g <span class="token operator">&amp;&amp;</span> hexo s<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
@@ -597,6 +597,12 @@ tcb <span class="token parameter variable">-v</span> <span aria-hidden="true" cl
 
 
   
+
+
+  
+  
+
+
 
 
 
@@ -816,6 +822,49 @@ tcb <span class="token parameter variable">-v</span> <span aria-hidden="true" cl
 
 
   <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
 
   <script  src="/js/local-search.js" ></script>
 
