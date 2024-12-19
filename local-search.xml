@@ -20,11 +20,36 @@
     
     <tags>
       
-      <tag>深度学习</tag>
-      
       <tag>Megatron-LM</tag>
       
       <tag>PyTorch</tag>
+      
+      <tag>深度学习</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>大模型中的计算和内存占用理论分析</title>
+    <link href="/posts/c00f223d/"/>
+    <url>/posts/c00f223d/</url>
+    
+    <content type="html"><![CDATA[<h2 id="1-理论FLOPS测算"><a href="#1-理论FLOPS测算" class="headerlink" title="1. 理论FLOPS测算"></a>1. 理论FLOPS测算</h2><p>参考Nvidia Megatron中给的方法，我们约定如下符号：</p><ul><li>l：Transformer 层数。</li><li>h：hidden size大小。</li><li>s：sequence length 。</li><li>V：vocabulary size 词汇表大小。</li><li>b：训练的batch size。<br>FLOPS基本贡献都来自所涉及的矩阵乘过程，例如：矩阵 $X(a,b) * Y(b,c)$ 一共需要2abc次OPs(2 是由于乘、加单独各算一次)。</li></ul><p><img src="https://s2.loli.net/2024/12/19/dTSzr4n6pcQ5GAy.png" alt="Untitled 2 2|Untitled 2 2.png"></p><h3 id="1-1-Attention模块"><a href="#1-1-Attention模块" class="headerlink" title="1.1 Attention模块"></a>1.1 Attention模块</h3><ul><li>$QKV$生成：输入X为$(b,s,h)$，通过一个线性映射生成QKV时需要权重：W$(h,3h)$， 一共是 $2\times 3\times bsh^2$ ， 即 ($6bsh^2$)</li><li>$QK^T$：一个简单的表述 $(b,s,h) * (b,h,s)$，可以认为是$2bs^2h$</li><li>Map V： $(b,s,s) * (b,s,h)$，可以认为是 $2bs^2h$</li><li>post-attention 线性映射：$(b,s,h)*(h,h)$，可以认为是$2bsh^2$</li><li>总共 $8bsh^2+4bs^2h$</li></ul><h3 id="1-2-Feed-Forward-Network-FFN-模块"><a href="#1-2-Feed-Forward-Network-FFN-模块" class="headerlink" title="1.2 Feed-Forward Network (FFN)模块"></a>1.2 Feed-Forward Network (FFN)模块</h3><p>在前馈网络层，主要包含两个MLP层，实现h→4h 和 4h→h的映射：</p><ul><li>MLP 1: $(b,s,h) * (h,4h)$ ，可认为是 $2*4bsh^2$</li><li>MLP 2: $(b,s,4h) * (4h,h)$，可以认为是$2*4bsh^2$</li><li>总共 $16bsh^2$</li></ul><h3 id="1-3-前向-amp-反向-amp-激活重计算"><a href="#1-3-前向-amp-反向-amp-激活重计算" class="headerlink" title="1.3 前向&amp;反向&amp;激活重计算"></a>1.3 前向&amp;反向&amp;激活重计算</h3><p>由前两部分可知，一层Transformer的前向过程 其主要 FLOPs 大致可估算为： </p><p>$$24bsh^2 + 4bs^2h$$</p><p>我们一般认为反向计算 相比正向，大致可估算为<strong>双倍的FLOPs</strong>，因为需要分别计算 输入和权重的梯度（这里的输入 其实就是我们说的激活值，因为下一层的输入 就是前一层的计算结果）。</p><p>因此，对于不包含激活值重计算的层，的理论FLOPS就是：</p><p>$$3\times(24bsh^2+4bs^2h)&#x3D;72bsh^2(1+\frac{s}{6h})$$</p><p>而对于存在激活值重计算的层，可以简单认为是<strong>按照 full的方式进行重计算</strong>，因此，相当于每次反向时<strong>多进行了一次额外前向计算</strong>(略显暴力的描述)，因此， 理论FLOPS就是：</p><p>$$4\times(24bsh^2+4bs^2h)&#x3D;96bsh^2(1+\frac{s}{6h})$$</p><h3 id="1-4-完整模型"><a href="#1-4-完整模型" class="headerlink" title="1.4 完整模型"></a>1.4 完整模型</h3><p>我们需要考虑了将h 映射到V的过程(Embedding)，即 $(b,s,h) * (h,V)$。 前向 $2bshV$，反向直接变成 $4bshV$，共$6bshV$，只有一层。</p><p>综上，我们使用$l_1$ 表示非激活重计算的层数，$l_2$表示激活重计算的层数，可以量化一个包含$l_1+l_2$层Transformer和Embeding的简化版模型的计算复杂度：</p><span>$$l_1 \times 72bsh^2(1+\frac{s}{6h}) + l_2 \times 96bsh^2(1+\frac{s}{6h}) ~+~6bshV \\ =(3l_1+4l_2)24bsh^2(1+\frac{s}{6h})+6bshV$$</span><p>这里可以引入一个比值$\gamma &#x3D; \frac{l_2}{l}$，表示使用激活重计算层数的比例(全激活则1，无激活则0)，可进一步简化为：</p><p>$$(3+\gamma)24bsh^2l(1+\frac{s}{6h})+6bshV$$</p><h2 id="2-理论内存占用分析-训练"><a href="#2-理论内存占用分析-训练" class="headerlink" title="2. 理论内存占用分析 (训练)"></a>2. 理论内存占用分析 (训练)</h2><p>Transformer-Decode-Only类模型在训练中的主要显存占用可划分为：</p><ul><li>模型状态量(包括模型参数、梯度以及优化器状态)，只和模型参数量有关。</li><li>模型的中间激活值。</li><li>计算冗余、临时buffer、存储碎片等。</li></ul><p>类似地，我们仍然规定一些符号：</p><ul><li>l：transformer 模型的层数</li><li>h：隐藏层大小</li><li>a：注意力头数</li><li>s：输入的序列长度</li><li>b：输入的batch 大小</li></ul><h3 id="2-1-模型参数"><a href="#2-1-模型参数" class="headerlink" title="2.1 模型参数"></a>2.1 <strong>模型参数</strong></h3><p>Transformer类模型的主要结构形式是：Embedding+ Transformer Layer $\times~l$ 。其中主要的参数和激活值部分都在Transformer Layer，该层主要由Attention和FFN(FeedForwardNetwork)组成。 而模型的参数主要集中在一系列(可学习的)线性映射过程中，包含weight和bias矩阵(由于广播的因素，bias的规模一般远小于weight)。</p><p>与第一部分不同，该部分笔者根据LLaMA-v1的结构进行分析，由于swiglu的使用，FFN的结构发生了些许变化，如下：</p><p><img src="https://s2.loli.net/2024/12/19/9uC7QrHb6JolNGS.png" alt="Untitled 2|Untitled 2.png"></p><ul><li>传统FFN(例如GPT3)：<ul><li>$h_{ffn}&#x3D;4h$ </li><li>$Proj：h-&gt;h_{ffn} –GeLu– h_{ffn}-&gt;h$</li></ul><p> </p></li><li>LLaMA的FFN：<ul><li>$h_{ffn}&#x3D;256 \times ((\frac{8h}{3}+255) \mid 256)$，|表示整除。一般分析可近似为：$h_{ffn}&#x3D;\frac{8h}{3}$</li><li>$Proj：Gate：h-&gt;h_{ffn}，UP：h-&gt;h_{ffn} – SiLU(Gate)\cdot \ UP – Down：h_{ffn} -&gt;h$</li></ul></li></ul><p>笔者统计出了各层的权重，如下表所示：</p><p><img src="https://s2.loli.net/2024/12/19/M8lTdzOYSFPoe3g.png" alt="Untitled 1"></p><p>一般再加上做Embedding时的proj矩阵(V,h)，求和为：$l\times (4h^2+3h*h_{ffn})+V h$，可以近似$12h^2l+Vh$</p><p>对我们的LLaMA65B模型：$l&#x3D;80,h&#x3D;8192，V&#x3D;50176，h_{fnn}&#x3D;22016$，估算的模型参数量为：65.17B。</p><p>对LLaMA-7B模型：$l&#x3D;32,h&#x3D;4096，V&#x3D;50176，h_{fnn}&#x3D;11008$，估算的模型参数量为：6.68B。</p><h3 id="2-2-简单内存占用估算"><a href="#2-2-简单内存占用估算" class="headerlink" title="2.2 简单内存占用估算"></a>2.2 简单内存占用估算</h3><p>我们训练中实际使用的是默认的AdamW优化器，优化器状态中需要保留<strong>一阶动量</strong>和<strong>二阶动量</strong>。而涉及到混合精度训练时，虽然参与前向计算的参数和反向计算的梯度都是fp16的形式，但为了避免参数更新时的舍入误差(FP16精度缺乏 导致的A+b&#x3D;A之类情况)，会额外在优化器内维护一份FP32的参数用于参数更新。这些信息<strong>全部采用FP32保存</strong>。</p><p>梯度可以看作参数的一种“属性”，虽然不是所有参数都有梯度，但一般可将<strong>梯度大小近似看作与参数相同</strong>。</p><p>一般的大模型内存分析，可以简单分析模型状态量的总占用。若我们将参数量记为$\Phi$，不同精度模式下的内存占用如下：</p><table><thead><tr><th><strong>训练精度</strong></th><th><strong>参数</strong></th><th><strong>梯度</strong></th><th><strong>优化器</strong></th><th><strong>总大小</strong></th></tr></thead><tbody><tr><td>FP32</td><td>Φ*4Bytes</td><td>Φ*4Bytes</td><td>2Φ*4Bytes</td><td>16Φ Bytes</td></tr><tr><td>FP16混精</td><td>Φ*2Bytes</td><td>Φ*2Bytes</td><td>3Φ*4Bytes</td><td>16Φ Bytes</td></tr></tbody></table><p>对于 65B模型为： 971 GB。</p><p>对于 7B模型为：99.5 GB。</p><h3 id="2-3-中间激活值"><a href="#2-3-中间激活值" class="headerlink" title="2.3 中间激活值"></a>2.3 中间激活值</h3><p>我们在上面得到了一个反直觉的分析结果：<strong>为何采用混精并未减少内存占用？</strong> 这与我们在实践中得到的结论不一样啊。 </p><p>笔者认为，应考虑如下两种情景：</p><ul><li>采用优化器侧的内存优化(例如ZeRo、不保留FP32副本)，混精训练的内存节省在：参数和梯度、<strong>中间激活值</strong>。</li><li>不采用优化器的内存优化，混精训练的内存节省在： <strong>中间激活值</strong>、<del>参数和梯度</del>(被FP32副本抵消)。</li></ul><p>为了简化分析，我们按照GPT3的decode-only结构讨论，<strong>计算过程采用FP16</strong>。<br><img src="https://s2.loli.net/2024/12/19/dTSzr4n6pcQ5GAy.png" alt="Untitled 2 2|Untitled 2 2.png"><br>我们仍然规定一些符号：</p><ul><li>s：Seq Length</li><li>b： Batch Size</li><li>h：Hidden Size</li><li>a：Head Num</li><li>d：Dim Size, $h&#x3D; a \times d$</li><li>l：Layer Num</li></ul><h4 id="2-3-1-Attention模块"><a href="#2-3-1-Attention模块" class="headerlink" title="2.3.1 Attention模块"></a>2.3.1 Attention模块</h4><p> 我们考虑 Self-Attention 后接Linear和Dropout的结构。</p><ul><li><p>$QKV$生成：输入X为$(b,s,h)$，通过一个线性映射生成QKV时需要权重：W**$(h,3h)$**和偏置bias(3h)，然后再进行切分，一共得到a组QKV，共得到$a\times3\times (b,s,h&#x2F;a)$。</p><ul><li>反向计算时，需要保留共同输入X：$bsh\times 2Bytes$</li><li>$X(b,s,h)\ \times W^Q_i(h,h&#x2F;a)&#x3D;&gt; Q_i(b,s,h&#x2F;a)\ X(b,s,h)\ \times W^K_i(h,h&#x2F;a)&#x3D;&gt; K_i(b,s,h&#x2F;a)\ X(b,s,h)\ \times W^V_i(h,h&#x2F;a)&#x3D;&gt; V_i(b,s,h&#x2F;a)$</li></ul></li><li><p>$QK^T$：每个头的输入为$(b,s,h&#x2F;a)\times2$，无需权重，得到矩阵$(b,s,s)$，共计 $a\times(b,s,s)$。</p><ul><li>反向计算时需要保留输入：$2bsh\times2Bytes$</li><li>$Q(b,s,h&#x2F;a)\ \times\ K^T(b,h&#x2F;a,s)&#x3D;&gt;A(b,s,s)$</li></ul></li><li><p>Mask过程(可选)，输入 $a\times(b,s,s)$<em>的Mask。一般可认为每个元素采用1 Byte存储。</em></p><ul><li>反向时需要保留mask：$abs^2\times1Bytes$。</li></ul></li><li><p>Softmax：每个头的输入是 (b,s,s)，执行softmax无需权重也不改变输入大小，输出时仍然为(b,s,s)，共计得到$a\times(b,s,s)$。</p><ul><li>$softmax(\frac{A(b,s,s)}{\sqrt{h&#x2F;a}})&#x3D;&gt; M(b,s,s)$</li><li>反向计算时候需要保留：$abs^2\times 2Bytes$。</li></ul></li><li><p>Softmax-Dropout：输入 $a\times(b,s,s)$<em>的Mask，输出</em> $a\times(b,s,s)$。</p><ul><li>$M(b,s,s)\odot Mask(b,s,s)&#x3D;&gt; M_{drop}(b,s,s)$</li><li>反向计算需要保留mask：$abs^2\times1Bytes$。</li></ul></li><li><p>$MapV$： 输入是$a\times Map (b,s,s)$和 $a\times V(b,s,h&#x2F;a)$ ，计算$Map\times V$，无权重。输出是 $a\times V(b,s,h&#x2F;a)$ ， 多头输出通过Contact连接得到 $(b,s,h)$。</p><ul><li>$M_{drop}(b,s,s)\times V(b,s,h&#x2F;a)&#x3D;&gt;Y_i(b,s,h&#x2F;a)$</li><li>反向计算需要保留输入：$(abs^2+bsh)\times 2Bytes$。</li></ul></li><li><p>Attention-Linear：输入是$(b,s,h)$ ，权重是W(h,h)，偏置bias(h)，输出为(b,s,h)。</p><ul><li>反向计算需要保留输入：$bsh\times 2Bytes$。</li><li>$Y(b,s,h)\times W(h,s)&#x3D;&gt;Z(b,s,h)$</li></ul></li><li><p>Attention-Dropout：输入是一个Mask$(b,s,h)$。</p><ul><li>$Z(b,s,h)\odot Mask(b,s,h)&#x3D;&gt;Z_{drop}(b,s,h)$</li><li>反向计算需要保留mask：$bsh \times 1Bytes$。</li></ul></li></ul><p>综上，Attention 模块共需要激活值Mem：$11bsh+5abs^2 Bytes$。（如考虑softmax前的Mask，则是$\ 11bsh+6abs^2 Bytes$ ）。</p><h4 id="2-3-2-FFN模块"><a href="#2-3-2-FFN模块" class="headerlink" title="2.3.2 FFN模块"></a>2.3.2 FFN模块</h4><p>FFN我们考虑两个Linear层、一个GeLU激活和一个Dropout。</p><ul><li>第一个线性层：输入是$(b,s,h)$，权重$(h,4h)$，偏置bias(4h)，输出是$(b,s,4h)$。<ul><li>$X(b,s,h)\times W(h,4h)&#x3D;&gt;Z(b,s,4h)$</li><li>反向需要保留输入：$bsh\times 2Bytes$。</li></ul></li><li>GeLU：输入是$(b,s,4h)$，输出形状不变。<ul><li>$GeLU(Z(b,s,4h)) &#x3D;&gt; A(b,s,4h)$</li><li>反向需保留输入：$4bsh\times 2Bytes$。</li></ul></li><li>第二个线性层：输入是$(b,s,4h)$，权重是$(4h,h)$，偏置bias(h)，输出是$(b,s,h)$。<ul><li>$A(b,s,4h)\times W(4h,h)&#x3D;&gt;Y(b,s,h)$</li><li>反向需保留输入：$4bsh\times 2Bytes$。</li></ul></li><li>Dropout：输入一个等大的$(b,s,h)$ Mask。<ul><li>$Y(b,s,h)\odot Mask(b,s,h)&#x3D;&gt;Y_{drop}(b,s,h)$</li><li>反向需要保留Mask：$bsh\times 1Bytes$。</li></ul></li></ul><p>综上，FFN(MLP)模块共需要激活值Mem：$\ 19bsh\ Bytes$ 。</p><h4 id="2-3-3-LayerNorm层"><a href="#2-3-3-LayerNorm层" class="headerlink" title="2.3.3 LayerNorm层"></a>2.3.3 LayerNorm层</h4><ul><li>LayerNorm：一个是在Attention前，一个是在MLP前。<ul><li>输入$Y(b,s,h)$ 按h维求均值方差 $\frac{X(b,s,h)-E[X]}{\sqrt(Var[X]+\xi)}\times \gamma+\beta$， 输出仍然是$(b,s,h)$<br>  两个层的输入都是$(b,s,h)$，输出不变。<br>  反向需要保留输入，共：$2bsh\times2Bytes$。</li></ul></li></ul><p>综上，2个LayerNorm模块共需要激活值Mem：$4bsh\ Bytes$ 。</p><p> 最终，每个Transformer 需要保留的中间激活值(不采用激活重计算的情况下)：$$\ bsh(34+\frac{5as}{h})~Bytes$$<br>对batch_size&#x3D;1，seq_length&#x3D;2048的情形：</p><ul><li>65B模型：$l&#x3D;80,h&#x3D;8192, a&#x3D;64$,  中间激活值: 142.5GB（模型状态量 971GB）。</li><li>7B模型：$l&#x3D;32,h&#x3D;4096, a&#x3D;32$,  中间激活值：28.5GB（模型状态量 99.5GB）。<br>若考虑FP32训练，中间激活值可以暴力翻倍来近似。</li></ul><p>注意：</p><ul><li>当batch 增加时，中间激活值近乎成比例增加。</li><li>当seq_length增加时，中间激活值将逐渐趋于平方量级增加。<ul><li>seq扩增到8k时，65B模型的中间激活值约为 1770GB (已近12倍 )。</li></ul></li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>保住饭碗</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>深度学习</tag>
       
     </tags>
     
@@ -261,9 +286,9 @@
     
     <tags>
       
-      <tag>GPU</tag>
-      
       <tag>深度学习</tag>
+      
+      <tag>GPU</tag>
       
     </tags>
     
