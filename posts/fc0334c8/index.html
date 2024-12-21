@@ -1,0 +1,1230 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="云越泽">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="loss-scale被广泛用于混精训练中，扩大反向传播过程中的参数梯度计算。笔者进一步解读了Megatron-LM框架中的loss-scale设置到应用的完整过程，希望能加深理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Megatron-LM中的loss-scale">
+<meta property="og:url" content="http://example.com/posts/fc0334c8/index.html">
+<meta property="og:site_name" content="云海仙泽">
+<meta property="og:description" content="loss-scale被广泛用于混精训练中，扩大反向传播过程中的参数梯度计算。笔者进一步解读了Megatron-LM框架中的loss-scale设置到应用的完整过程，希望能加深理解。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/12/18/kElLGhIBdiU5ARP.png">
+<meta property="article:published_time" content="2024-06-05T11:40:00.000Z">
+<meta property="article:modified_time" content="2024-12-21T16:37:10.479Z">
+<meta property="article:author" content="云越泽">
+<meta property="article:tag" content="Megatron-LM">
+<meta property="article:tag" content="PyTorch">
+<meta property="article:tag" content="深度学习">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://s2.loli.net/2024/12/18/kElLGhIBdiU5ARP.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Megatron-LM中的loss-scale - 云海仙泽</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hint.css@2/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":100,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"❡"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>云海仙泽 Hexo</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://s2.loli.net/2024/12/18/3lS4CwvO2suQREj.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Megatron-LM中的loss-scale"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        云越泽
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-06-05 19:40" pubdate>
+          2024年6月5日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          全文字数：13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          阅读耗时：112 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Megatron-LM中的loss-scale</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>loss-scale被广泛用于混精训练中，扩大反向传播过程中的参数梯度计算。笔者进一步解读了Megatron-LM框架中的loss-scale设置到应用的完整过程，希望能加深理解。</p>
+<h2 id="1-loss-scale初始化"><a href="#1-loss-scale初始化" class="headerlink" title="1. loss-scale初始化"></a>1. loss-scale初始化</h2><h3 id="1-1-超参数初始化"><a href="#1-1-超参数初始化" class="headerlink" title="1.1 超参数初始化"></a>1.1 超参数初始化</h3><p>Megatron中支持静态和动态两种loss scale设置方式：</p>
+<ul>
+<li>静态scale (Constant Loss Scale)，是指训练过程中用固定的 扩放因子进行scale，扩放因子的设置<strong>需要经验性调整超参</strong>。</li>
+<li>动态scale (Dynamic Loss Scale)，随着训练推进，每间隔一定迭代 或 满足一定触发条件，就对用于loss scale的因子 进行扩放 或 缩放。简言之：框架帮你动态地找最合适的scale超参，减少了超参数调整的复杂性，使得训练过程更加自动化。<br>参见 <code>megatron/arguments.py</code> 部分：</li>
+</ul>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">group<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--loss-scale'</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">float</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+                       <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'Static loss scaling, positive power of 2 '</span>
+                       <span class="token string">'values can improve fp16 convergence. If None, dynamic'</span>
+                     <span class="token string">'loss scaling is used.'</span><span class="token punctuation">)</span>
+group<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--initial-loss-scale'</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">float</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">2</span><span class="token operator">**</span><span class="token number">32</span><span class="token punctuation">,</span>
+                   <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'Initial loss-scale for dynamic loss scaling.'</span><span class="token punctuation">)</span>
+group<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--min-loss-scale'</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">float</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">1.0</span><span class="token punctuation">,</span>
+                   <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'Minimum loss scale for dynamic loss scale.'</span><span class="token punctuation">)</span>
+group<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--loss-scale-window'</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">float</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">1000</span><span class="token punctuation">,</span>
+                   <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'Window over which to raise/lower dynamic scale.'</span><span class="token punctuation">)</span>
+group<span class="token punctuation">.</span>add_argument<span class="token punctuation">(</span><span class="token string">'--hysteresis'</span><span class="token punctuation">,</span> <span class="token builtin">type</span><span class="token operator">=</span><span class="token builtin">int</span><span class="token punctuation">,</span> default<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span>
+                       <span class="token builtin">help</span><span class="token operator">=</span><span class="token string">'hysteresis for dynamic loss scaling'</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<ul>
+<li><code>--loss-scale</code>：设置静态的loss-scale值，必须为2的正指数幂，缺省默认动态。</li>
+<li><code>--initial-loss-scale</code> : 动态调整loss-scale时，需要设置的loss-scale初始值，缺省$2^{32}$。</li>
+<li><code>—-min-loss-scale</code> ：动态调整loss-scale时，loss-scale的最小值，缺省1.0。</li>
+<li><code>--loss-scale-window</code>：动态调整loss-scale时，loss-scale的扩放周期，缺省1000 iters。</li>
+<li><code>--hysteresis</code> ：动态调整loss-scale时，loss-scale的缩放周期，或者称(缩放前)nan&#x2F;if的容忍次数，缺省值是2。</li>
+</ul>
+<p>此处注意：</p>
+<ul>
+<li>在不设置任何loss-scale相关参数的情况下，在分布式优化器或者混合精度训练中，<strong>默认采用动态loss-scale，且从极高的loss-scale初值开始 不断向下寻找最合适的scale参数</strong>。</li>
+<li>可以通过设置静态loss-scale值为1.0来避免混精训练中的缩放。（特殊情形下可用）</li>
+<li><code>loss-scale</code> 设置后，会优先采用静态loss-scale。</li>
+<li><code>initial-loss-scale</code> 动态loss-scale初值，笔者一般经验性地设置为  $32768 (2^{15})$ 或 $65536(2^{16})$ 。</li>
+</ul>
+<h3 id="1-2-类中初始化"><a href="#1-2-类中初始化" class="headerlink" title="1.2 类中初始化"></a>1.2 类中初始化</h3><p>上述开关值，在 <code>megatron/optimizer/init.py</code> 中被调用：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">get_megatron_optimizer</span><span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	args <span class="token operator">=</span> get_args<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	<span class="token keyword">if</span> args<span class="token punctuation">.</span>fp16 <span class="token keyword">or</span> args<span class="token punctuation">.</span>bf16 <span class="token keyword">or</span> args<span class="token punctuation">.</span>use_distributed_optimizer<span class="token punctuation">:</span>
+        grad_scaler <span class="token operator">=</span> <span class="token boolean">None</span>
+        <span class="token comment"># Constant loss scale.</span>
+        <span class="token keyword">if</span> args<span class="token punctuation">.</span>loss_scale<span class="token punctuation">:</span>
+            grad_scaler <span class="token operator">=</span> ConstantGradScaler<span class="token punctuation">(</span>args<span class="token punctuation">.</span>loss_scale<span class="token punctuation">)</span>
+        <span class="token comment"># Dynamic loss scale.</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> args<span class="token punctuation">.</span>fp16<span class="token punctuation">:</span>
+                grad_scaler <span class="token operator">=</span> DynamicGradScaler<span class="token punctuation">(</span>
+                    initial_scale<span class="token operator">=</span>args<span class="token punctuation">.</span>initial_loss_scale<span class="token punctuation">,</span>
+                    min_scale<span class="token operator">=</span>args<span class="token punctuation">.</span>min_loss_scale<span class="token punctuation">,</span>
+                    growth_factor<span class="token operator">=</span><span class="token number">2.0</span><span class="token punctuation">,</span>
+                    backoff_factor<span class="token operator">=</span><span class="token number">0.5</span><span class="token punctuation">,</span>
+                    growth_interval<span class="token operator">=</span>args<span class="token punctuation">.</span>loss_scale_window<span class="token punctuation">,</span>
+                    hysteresis<span class="token operator">=</span>args<span class="token punctuation">.</span>hysteresis<span class="token punctuation">)</span>
+
+        <span class="token comment"># Megatron optimizer.</span>
+        opt_ty <span class="token operator">=</span> DistributedOptimizer \
+            <span class="token keyword">if</span> args<span class="token punctuation">.</span>use_distributed_optimizer <span class="token keyword">else</span> \
+            Float16OptimizerWithFloat16Params
+        <span class="token keyword">return</span> opt_ty<span class="token punctuation">(</span>optimizer<span class="token punctuation">,</span>
+                      args<span class="token punctuation">.</span>clip_grad<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>grad_scaler<span class="token punctuation">,</span>model<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>只有开启<code>distributed_optimizer</code> 或者 <code>fp16/bf16(混精)</code>模式下，才会使用loss scale:</p>
+<ul>
+<li>先检查是否使用静态scale。 （混精、分布式优化器都可采用）</li>
+<li>其他情况下，一律采用动态scale。（只有混精训练可以启用）</li>
+</ul>
+<h2 id="2-scale值管理"><a href="#2-scale值管理" class="headerlink" title="2. scale值管理"></a>2. scale值管理</h2><p>上述loss scale相关参数，被用于初始化 <code>grad_scaler</code>，最终传递给优化器。GradScaler的具体实现封装在 <code>megatron/optimizer/grad_scaler.py</code> 中：</p>
+<h3 id="2-1-MegatronGradScaler-Abstract"><a href="#2-1-MegatronGradScaler-Abstract" class="headerlink" title="2.1 MegatronGradScaler (Abstract)"></a>2.1 MegatronGradScaler (Abstract)</h3><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">MegatronGradScaler</span><span class="token punctuation">(</span>ABC<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> initial_scale<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Initialize scale value with the input initial scale."""</span>
+        <span class="token keyword">assert</span> initial_scale <span class="token operator">></span> <span class="token number">0.0</span>
+        <span class="token comment"># # modified for cpu use</span>
+        <span class="token comment">#self._scale = torch.cuda.FloatTensor([initial_scale])</span>
+        self<span class="token punctuation">.</span>_scale <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span>initial_scale<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token decorator annotation punctuation">@property</span>
+    <span class="token keyword">def</span> <span class="token function">scale</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>_scale
+
+    <span class="token decorator annotation punctuation">@property</span>
+    <span class="token keyword">def</span> <span class="token function">inv_scale</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>_scale<span class="token punctuation">.</span>double<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reciprocal<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">float</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token decorator annotation punctuation">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> found_inf<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+    <span class="token decorator annotation punctuation">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+    <span class="token decorator annotation punctuation">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">load_state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> state_dict<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>上述的MegatronGradScaler是一个抽象基类，定义了基本的接口和一些初始化操作。</p>
+<p>其中<code>_scale</code>是一个protected变量(约定 只允许通过类方法来访问和修改)，保存当前的scale值(也是运行时的_scale值 )；<code>scale</code>和<code>inv_scale</code>属性，分别实现了取scale值和scale值倒数，用于对loss的<strong>缩放</strong>和<strong>还原</strong>。</p>
+<p><code>update</code>、<code>state_dict</code>和<code>load_state_dict</code> 三个抽象方法主要是为了<strong>兼容</strong>动态缩放。</p>
+<h3 id="2-2-Constant-Grad-Scaler"><a href="#2-2-Constant-Grad-Scaler" class="headerlink" title="2.2 Constant Grad Scaler"></a>2.2 Constant Grad Scaler</h3><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">ConstantGradScaler</span><span class="token punctuation">(</span>MegatronGradScaler<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+    <span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> found_inf<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span>
+
+    <span class="token keyword">def</span> <span class="token function">state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token builtin">dict</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">load_state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> state_dict<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">pass</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>静态scale非常简单，不需要进行scale值的更新，通过<code>--loss-scale</code> 参数在类对象初始化方法（继承父类）中设置<code>_scale</code>值。</p>
+<h3 id="2-3-Dynamic-Grad-Scaler"><a href="#2-3-Dynamic-Grad-Scaler" class="headerlink" title="2.3 Dynamic Grad Scaler"></a>2.3 Dynamic Grad Scaler</h3><p>接下来我们来看动态缩放器，分别分析<code>init、state_dict</code> 和<code>update</code>相关。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">DynamicGradScaler</span><span class="token punctuation">(</span>MegatronGradScaler<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> initial_scale<span class="token punctuation">,</span> min_scale<span class="token punctuation">,</span>
+                 growth_factor<span class="token punctuation">,</span> backoff_factor<span class="token punctuation">,</span>
+                 growth_interval<span class="token punctuation">,</span> hysteresis<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">""""Grad scaler with dynamic scale that gets adjusted
+        during training."""</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>DynamicGradScaler<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>initial_scale<span class="token punctuation">)</span>
+
+        <span class="token comment"># Lower bound on the scale.</span>
+        <span class="token keyword">assert</span> min_scale <span class="token operator">></span> <span class="token number">0.0</span>
+        <span class="token keyword">assert</span> min_scale <span class="token operator">&lt;=</span> initial_scale
+        <span class="token comment"># # modified for cpu use</span>
+        <span class="token comment">#self.min_scale = torch.cuda.FloatTensor([min_scale])</span>
+        self<span class="token punctuation">.</span>min_scale <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span>min_scale<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># Growth and backoff factors for the scale.</span>
+        <span class="token keyword">assert</span> growth_factor <span class="token operator">></span> <span class="token number">1.0</span>
+        <span class="token comment">#self.growth_factor = torch.cuda.FloatTensor([growth_factor])</span>
+        self<span class="token punctuation">.</span>growth_factor <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span>growth_factor<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">assert</span> backoff_factor <span class="token operator">&lt;</span> <span class="token number">1.0</span>
+        <span class="token keyword">assert</span> backoff_factor <span class="token operator">></span> <span class="token number">0.0</span>
+        <span class="token comment">#self.backoff_factor = torch.cuda.FloatTensor([backoff_factor])</span>
+        self<span class="token punctuation">.</span>backoff_factor <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span>backoff_factor<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># Interval over which if we don't see any inf/nan,</span>
+        <span class="token comment"># we will scale the grad scale by the growth factor.</span>
+        <span class="token keyword">assert</span> growth_interval <span class="token operator">></span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>growth_interval <span class="token operator">=</span> growth_interval
+        <span class="token comment"># Number of inf/nans we should see before scaling down</span>
+        <span class="token comment"># the grad scale by the backoff factor.</span>
+        <span class="token keyword">assert</span> hysteresis <span class="token operator">></span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>hysteresis <span class="token operator">=</span> hysteresis
+
+        <span class="token comment"># Trackers.</span>
+        self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">=</span> <span class="token number">0</span>
+        self<span class="token punctuation">.</span>_hysteresis_tracker <span class="token operator">=</span> self<span class="token punctuation">.</span>hysteresis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>初始化部分没什么可以分析的，一系列assert和规范操作。我们重点来看下相关成员变量：</p>
+<ul>
+<li>用户参数赋值：<ul>
+<li><code>initial_scale</code>：初始scale值，范围(0, +OO)，由<code>--initial-loss-scale</code>设定，默认$2^{32}$。</li>
+<li><code>min_scale</code>：最小scale值，范围(0,init_scale]，由<code>--min-loss-scale</code> 设定，默认是1.0。</li>
+<li><code>growth_interval</code>：scale的扩放周期，范围(0, +OO)，由<code>--loss-scale-window</code>设定，默认1000迭代。</li>
+<li><code>hysteresis</code>：scale的缩放周期，范围(0,max_value_INT), 由<code>--hysteresis</code> 设定，默认是2。</li>
+</ul>
+</li>
+<li>hard-code赋值（1.2部分）：<ul>
+<li>growth_factor ：scale值的扩放因子，范围(1.0, +OO)，hard-code设定值2.0。</li>
+<li>backoff_factor：scale值的缩放因子，范围(0.0, 1.0)，hard-code设定值0.5。</li>
+</ul>
+</li>
+<li>本类的protected ：<ul>
+<li><code>_grow_tracker</code> ：扩放周期计数器，初值设定为0。</li>
+<li><code>_hysteresis_tracker</code> ：缩放周期计数器，初值设定为<code>self.hysteresis</code> 。</li>
+</ul>
+</li>
+</ul>
+<p>state_dict部分：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	state_dict <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+	state_dict<span class="token punctuation">[</span><span class="token string">'scale'</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>_scale
+	state_dict<span class="token punctuation">[</span><span class="token string">'growth_tracker'</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>_growth_tracker
+	state_dict<span class="token punctuation">[</span><span class="token string">'hysteresis_tracker'</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>_hysteresis_tracker
+	<span class="token keyword">return</span> state_dict
+
+
+<span class="token keyword">def</span> <span class="token function">load_state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> state_dict<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token comment"># # modified for cpu use</span>
+	<span class="token comment">#self._scale = state_dict['scale'].cuda(torch.cuda.current_device())</span>
+	self<span class="token punctuation">.</span>_scale <span class="token operator">=</span> state_dict<span class="token punctuation">[</span><span class="token string">'scale'</span><span class="token punctuation">]</span>
+	self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">=</span> state_dict<span class="token punctuation">[</span><span class="token string">'growth_tracker'</span><span class="token punctuation">]</span>
+	self<span class="token punctuation">.</span>_hysteresis_tracker <span class="token operator">=</span> state_dict<span class="token punctuation">[</span><span class="token string">'hysteresis_tracker'</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>scale_dict 需要额外保存 当前的<code>_scale</code>值，扩放周期计数器(<code>growth_tracker</code>)和缩放计数器(<code>_hysteresis_tracker</code>)。</p>
+<p>scale值动态更新(或者说搜索、自适应)过程：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">update</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> found_inf<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+	<span class="token comment"># If we have an inf/nan, growth tracker is set to 0</span>
+	<span class="token comment"># and hysterisis tracker is reduced by 1.</span>
+	<span class="token keyword">if</span> found_inf<span class="token punctuation">:</span>
+		self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">=</span> <span class="token number">0</span>
+		self<span class="token punctuation">.</span>_hysteresis_tracker <span class="token operator">-=</span> <span class="token number">1</span>
+		<span class="token comment"># Now if we are out of hysteresis count, scale down the loss.</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>_hysteresis_tracker <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+			self<span class="token punctuation">.</span>_scale <span class="token operator">=</span> torch<span class="token punctuation">.</span><span class="token builtin">max</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>_scale <span class="token operator">*</span> self<span class="token punctuation">.</span>backoff_factor<span class="token punctuation">,</span>
+									self<span class="token punctuation">.</span>min_scale<span class="token punctuation">)</span>
+	<span class="token keyword">else</span><span class="token punctuation">:</span>
+		<span class="token comment"># If there is no nan/inf, increment the growth tracker.</span>
+		self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">+=</span> <span class="token number">1</span>
+		<span class="token comment"># If we have had enough consequitive intervals with no nan/inf:</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">==</span> self<span class="token punctuation">.</span>growth_interval<span class="token punctuation">:</span>
+			<span class="token comment"># Reset the tracker and hysteresis trackers,</span>
+			self<span class="token punctuation">.</span>_growth_tracker <span class="token operator">=</span> <span class="token number">0</span>
+			self<span class="token punctuation">.</span>_hysteresis_tracker <span class="token operator">=</span> self<span class="token punctuation">.</span>hysteresis
+			<span class="token comment"># and scale up the loss scale.</span>
+			self<span class="token punctuation">.</span>_scale <span class="token operator">=</span> self<span class="token punctuation">.</span>_scale <span class="token operator">*</span> self<span class="token punctuation">.</span>growth_factor<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p><code>_scale</code> 值的自适应过程，分为缩放和扩放两种情况：</p>
+<ul>
+<li>缩放：如果发现梯度中存在 inf或者nan，将扩放计数器<code>_growth_tracker</code>重置(清零)，<code>_hysteresis_tracker</code> 减1，若<code>_hysteresis_tracker</code> <strong>小于等于</strong> 0，则对<code>_scale</code>本身进行缩放(减半)。这里之所以是小于等于，是因为触发了一次缩放后(变残血了)，此后每遭遇一次inf或者nan，就进行一次缩放。直到扩放一次scale值，才会回满血。</li>
+<li>扩放：在未发现inf或者nan时，累加扩放计数器<code>_growth_tracker</code> ，当达到扩放周期时，<code>_hysteresis_tracker</code> 重置(回满血)，进行一次<code>_scale</code>的扩放(倍增)。</li>
+</ul>
+<p>简而言之：</p>
+<ul>
+<li>在上一次scale值动态调整后，当<strong>连续</strong><code>growth_interval</code> (1000) iter内都<strong>没有出现nan或者inf</strong>时，倍增(x2)扩放一次scale，立刻重置缩放和扩放计数器。</li>
+<li>在上一次scale值扩放调整后，（不连续）<strong>累积</strong><code>_hysteresis</code> (2)次 <strong>出现nan或者inf</strong>，倍减(x0.5)缩放一次scale。 在上一次scale值缩放调整后，每出现一次nan或者inf，就进行一次scale倍减。</li>
+</ul>
+<h2 id="3-scale的应用"><a href="#3-scale的应用" class="headerlink" title="3. scale的应用"></a>3. scale的应用</h2><p>本节详进一步析下优化器内grad_scale如何发挥作用，我们参考<code>megatron/optimizer/optimizer.py</code> ，主要来看FP16混精模式下的优化器。</p>
+<p>类继承关系: </p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-text" data-language="text"><code class="language-text">ABC
+｜— MegatronOptimizer         
+	 ｜— FP32Optimizer
+	 ｜— MixedPrecisionOptimizer 
+		|— Float16OptimizerWithFloat16Params <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+
+<h3 id="3-1-对loss进行scale"><a href="#3-1-对loss进行scale" class="headerlink" title="3.1 对loss进行scale"></a>3.1 对loss进行scale</h3><p>MegatronOptimizer中实现了最简单扩放过程，就是前向计算完成，得到loss后，将其值乘上当前维护的<code>_scale</code>值，接着依靠反向传播的链式反应，自动将扩放依次作用到对各个参数的梯度计算上。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">MegatronOptimizer</span><span class="token punctuation">(</span>ABC<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	<span class="token decorator annotation punctuation">@abstractmethod</span>
+    <span class="token keyword">def</span> <span class="token function">get_loss_scale</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""The output should be a cuda tensor of size 1."""</span>
+        <span class="token keyword">pass</span>
+
+		<span class="token comment"># 缩放</span>
+    <span class="token keyword">def</span> <span class="token function">scale_loss</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> loss<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""Simple scaling."""</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>get_loss_scale <span class="token operator">*</span> loss<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>在<code>megatron/training.py的 train_step()</code>中，传入了优化器的<code>scale_loss</code>函数。</p>
+<blockquote>
+<p>pretrain → train → train_step → get_forward_backward_func</p>
+</blockquote>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">train_step</span><span class="token punctuation">(</span>forward_step_func<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>optimizer<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
+	forward_backward_func <span class="token operator">=</span> get_forward_backward_func<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	    losses_reduced <span class="token operator">=</span> forward_backward_func<span class="token punctuation">(</span>
+	        forward_step_func<span class="token operator">=</span>forward_step_func<span class="token punctuation">,</span>
+					<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	        grad_scaler<span class="token operator">=</span>optimizer<span class="token punctuation">.</span>scale_loss<span class="token punctuation">,</span>
+					<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>继续往下找，我们在<code>megatron/core/pipeline_parallel/schedules.py</code> 中找到了最终调用的<code>grad_scaler</code>这一参数的是 <code>backward_step()</code>函数。</p>
+<blockquote>
+<p>forward_backward_func→get_forward_backward_func → forward_backward_no_pipelining→ backward_step</p>
+</blockquote>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">backward_step</span><span class="token punctuation">(</span>grad_scaler<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>output_tensor<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	<span class="token comment"># Backward pass.</span>
+    <span class="token keyword">if</span> output_tensor_grad<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">is</span> <span class="token boolean">None</span> <span class="token keyword">and</span> grad_scaler <span class="token keyword">is</span> <span class="token keyword">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+        output_tensor <span class="token operator">=</span> grad_scaler<span class="token punctuation">(</span>output_tensor<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<p>去看<code>forward_step</code>不难发现，这里的<code>output_tensor[0]</code> 就是前向结束后计算得到的loss值。这和我们对loss-scale的认知是符合的：即使用scale值扩放过的loss进行反向计算。</p>
+<h3 id="3-2-unscale-操作"><a href="#3-2-unscale-操作" class="headerlink" title="3.2 unscale 操作"></a>3.2 unscale 操作</h3><p>unscale故名思义，就是对loss的缩放过程。我们扩放的目的是为了避免反向计算过程中梯度过小而丢失的问题，但在最终<strong>更新参数</strong>时，应将<strong>梯度还原</strong>回去，还原过程定义在<code>MixedPrecisionOptimizer</code>类中。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">MixedPrecisionOptimizer</span><span class="token punctuation">(</span>MegatronOptimizer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>fp16<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>grad_scaler<span class="token punctuation">,</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token comment">#形式上 fp16必须使用grad_scaler，可以不缩放，但必须有</span>
+		self<span class="token punctuation">.</span>fp16 <span class="token operator">=</span> fp16
+		self<span class="token punctuation">.</span>grad_scaler <span class="token operator">=</span> grad_scaler 
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+			<span class="token keyword">assert</span> <span class="token keyword">not</span> self<span class="token punctuation">.</span>fp16<span class="token punctuation">,</span> <span class="token string">'fp16 expects a grad scalar'</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">:</span> 
+			self<span class="token punctuation">.</span>found_inf <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0.0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment">#初始化 found_inf标志</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+			self<span class="token punctuation">.</span>_scalar_one <span class="token operator">=</span> torch<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1.0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+	
+	<span class="token comment">#获取当前的loss_scaler值</span>
+	<span class="token keyword">def</span> <span class="token function">get_loss_scaler</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+			<span class="token keyword">return</span> self<span class="token punctuation">.</span>_scaler_one 
+		<span class="token keyword">else</span><span class="token punctuation">:</span>
+			<span class="token keyword">return</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">.</span>scale
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	
+	<span class="token keyword">def</span> <span class="token function">_unscale_main_grads_and_check_for_nan</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token comment">#收集 main grads</span>
+		main_grads <span class="token operator">=</span> self<span class="token punctuation">.</span>_collect_main_grad_data_for_unscaling<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token comment"># 重置 found_inf标志</span>
+		self<span class="token punctuation">.</span>found_inf<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token number">0.0</span><span class="token punctuation">)</span>
+		<span class="token comment"># 还原(Unscale)梯度scale 并设置found_inf标志</span>
+		torch<span class="token punctuation">.</span>_amp_foreach_non_finite_check_and_unscale_<span class="token punctuation">(</span>
+				main_grads<span class="token punctuation">,</span> self<span class="token punctuation">.</span>found_inf<span class="token punctuation">,</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">.</span>inv_scale<span class="token punctuation">)</span>
+		<span class="token comment"># all-reduce 更新found_inf标志，统计梯度出现inf或nan的情况</span>
+		torch<span class="token punctuation">.</span>distributed<span class="token punctuation">.</span>all_reduce<span class="token punctuation">(</span>self<span class="token punctuation">.</span>found_inf<span class="token punctuation">,</span> 																op<span class="token operator">=</span>torch<span class="token punctuation">.</span>distributed<span class="token punctuation">.</span>Reduce<span class="token punctuation">.</span>OP<span class="token punctuation">.</span>MAX<span class="token punctuation">,</span>												group<span class="token operator">=</span>self<span class="token punctuation">.</span>get_model_parallel_groups<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token comment"># 返回结果 (是否出现了nan或inf)</span>
+		<span class="token keyword">return</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>found_inf<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+	<span class="token comment">#装饰器 可理解为冻结梯度的更改</span>
+	<span class="token decorator annotation punctuation">@torch<span class="token punctuation">.</span>no_grad</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">def</span> <span class="token function">step</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> args<span class="token punctuation">,</span> timers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">:</span> 
+			<span class="token comment"># unscale grad and check for inf or nan</span>
+			timier<span class="token punctuation">(</span><span class="token string">'optimizer-unscale-and-check-inf'</span><span class="token punctuation">,</span>log_level<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>start<span class="token punctuation">(</span>barrier<span class="token operator">=</span>args<span class="token punctuation">.</span>barrier_with_L1_time<span class="token punctuation">)</span>
+			found_inf_flag <span class="token operator">=</span> _unscale_main_grads_and_check_for_nan<span class="token punctuation">(</span><span class="token punctuation">)</span>
+			timer<span class="token punctuation">(</span><span class="token string">'optimizer-unscale-and-check-inf'</span><span class="token punctuation">,</span>log_level<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>stop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+			<span class="token comment"># update grad scaler</span>
+			self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">.</span>update<span class="token punctuation">(</span>found_inf_flag<span class="token punctuation">)</span>
+			<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>关于缩放还原，我们应该参考AMP的函数，由于笔者Foucus的平台不是CUDA，读者可自行研读CUDA的amp代码。<br><strong>其本质是： 统计各参数的梯度值中存在的inf或者nan数量，并对梯度值进行还原。</strong></p>
+<p>（下面的内容可略过）在笔者工作的平台上，上述函数的调用关系是：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-text" data-language="text"><code class="language-text">&lt;pytorch>/aten/src/ATen/native/cpu/AmpKernels.cpp
+   `amp_foreach_non_finite_check_and_unscale_cpu`
+
+	｜— &lt;pytorch>/third_party/swtensor/master/amp.cpp
+	    amp_foreach_non_finite_check_and_unscale
+   
+		｜— third_party/swtensor/slave/amp_slave.cpp
+		    spawn__local_amp_foreach_non_finite_check_and_unscale<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>而上述函数又是实例化了对应数据类型的模版函数实现的，主核代码如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">template</span> <span class="token operator">&lt;</span> <span class="token keyword">typename</span> <span class="token class-name">FType</span> <span class="token operator">></span> ssize_t <span class="token function">amp_foreach_non_finite_check_and_unscale_impl</span><span class="token punctuation">(</span><span class="token keyword">const</span> Tensor <span class="token operator">&amp;</span> self<span class="token punctuation">,</span> size_t num_of_elm<span class="token punctuation">,</span> <span class="token keyword">float</span> <span class="token operator">*</span> found_inf_ptr<span class="token punctuation">,</span> <span class="token keyword">float</span> inv_scale<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    args_amp_foreach_non_finite_check_and_unscale <span class="token operator">&lt;</span> FType <span class="token operator">></span> args<span class="token punctuation">;</span>
+    args<span class="token punctuation">.</span>input <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> FType <span class="token operator">*</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//args.found_inf_ptr = found_inf_ptr;</span>
+    size_t cg_num <span class="token operator">=</span> spawn_proxy_n_cg <span class="token operator">*</span> <span class="token number">64</span><span class="token punctuation">;</span>
+    <span class="token keyword">float</span> result<span class="token punctuation">[</span>cg_num<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+        <span class="token number">0</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    args<span class="token punctuation">.</span>output <span class="token operator">=</span> result<span class="token punctuation">;</span>
+    args<span class="token punctuation">.</span>inv_scale <span class="token operator">=</span> inv_scale<span class="token punctuation">;</span>
+    args<span class="token punctuation">.</span>len <span class="token operator">=</span> num_of_elm<span class="token punctuation">;</span>
+    <span class="token function">__real_spawn_proxy_run_mpecg</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span> <span class="token punctuation">)</span><span class="token punctuation">(</span>spawn__local_amp_foreach_non_finite_check_and_unscale <span class="token operator">&lt;</span> FType <span class="token operator">></span> <span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span> args<span class="token punctuation">,</span> spawn_proxy_n_cg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">spawn_proxy_join_mpecg</span><span class="token punctuation">(</span>spawn_proxy_n_cg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> cg_num<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1.</span> f<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token operator">*</span> found_inf_ptr <span class="token operator">=</span> <span class="token number">1.</span> f<span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>其中的args结构体定义如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">template</span> <span class="token operator">&lt;</span> <span class="token keyword">typename</span> <span class="token class-name">FType</span> <span class="token operator">></span> <span class="token keyword">struct</span> <span class="token class-name">args_amp_foreach_non_finite_check_and_unscale</span> <span class="token punctuation">&#123;</span>
+    FType <span class="token operator">*</span> input<span class="token punctuation">;</span>
+    <span class="token keyword">float</span> inv_scale<span class="token punctuation">;</span>
+    size_t len<span class="token punctuation">;</span>
+    <span class="token keyword">float</span> <span class="token operator">*</span> output<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token keyword">template</span> <span class="token operator">&lt;</span> <span class="token keyword">typename</span> <span class="token class-name">FType</span> <span class="token operator">></span> <span class="token keyword">void</span> <span class="token function">spawn__local_amp_foreach_non_finite_check_and_unscale</span><span class="token punctuation">(</span>args_amp_foreach_non_finite_check_and_unscale <span class="token operator">&lt;</span> FType <span class="token operator">></span> <span class="token operator">*</span> <span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<p>包含了输入、输出和对应长度，以及scale倒数。</p>
+<p>从核代码（<code>third_party/swtensor/slave/amp_slave.cpp</code>）如下：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">template</span> <span class="token operator">&lt;</span> <span class="token keyword">typename</span> <span class="token class-name">FType</span> <span class="token operator">></span> <span class="token keyword">void</span> <span class="token function">spawn__local_amp_foreach_non_finite_check_and_unscale</span><span class="token punctuation">(</span>
+    args_amp_foreach_non_finite_check_and_unscale <span class="token operator">&lt;</span> FType <span class="token operator">></span> <span class="token operator">*</span> args
+<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">using</span> type_t <span class="token operator">=</span> slave_type_t <span class="token operator">&lt;</span> FType <span class="token operator">></span> <span class="token punctuation">;</span>
+    <span class="token generic-function"><span class="token function">init_slave_type</span> <span class="token generic class-name"><span class="token operator">&lt;</span> FType <span class="token operator">></span></span></span> <span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// element number in each cg size_t buf_size = LDM_ASIZE / sizeof(type_t);</span>
+    <span class="token comment">// buffer to save the batch element of the Tensor type_t buf [buf_size] = &#123; 0 &#125;;</span>
+    <span class="token comment">// cg number size_t nthreads = spawn_proxy_n_cg * 64;</span>
+    <span class="token comment">// float * found_inf_ptr = args->found_inf_ptr;</span>
+    <span class="token keyword">float</span> <span class="token operator">*</span> output <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> <span class="token keyword">float</span> <span class="token operator">*</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>args <span class="token operator">-></span> output<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">float</span> inv_scale <span class="token operator">=</span> args <span class="token operator">-></span> inv_scale<span class="token punctuation">;</span>
+    size_t total_num <span class="token operator">=</span> args <span class="token operator">-></span> len<span class="token punctuation">;</span>
+    size_t left_num <span class="token operator">=</span> total_num<span class="token punctuation">;</span>
+    <span class="token comment">// computer number each iteration size_t cpt_num = nthreads * buf_size;</span>
+    <span class="token comment">// computer times: (x + n -1) / n size_t cpt_times = (total_num + cpt_num - 1) / cpt_num;</span>
+    type_t <span class="token operator">*</span> input <span class="token operator">=</span> <span class="token generic-function"><span class="token function">reinterpret_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> type_t <span class="token operator">*</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>args <span class="token operator">-></span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ssize_t tid <span class="token operator">=</span> CRTS_cgn <span class="token operator">*</span> <span class="token number">64</span> <span class="token operator">+</span> CRTS_tid<span class="token punctuation">;</span>
+    <span class="token keyword">float</span> flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>
+        size_t k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> k <span class="token operator">&lt;</span> cpt_times<span class="token punctuation">;</span> k <span class="token operator">+</span> <span class="token operator">+</span>
+    <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        left_num <span class="token operator">=</span> total_num <span class="token operator">-</span> k <span class="token operator">*</span> cpt_num<span class="token punctuation">;</span>
+        size_t batch_size <span class="token operator">=</span> buf_size<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>left_num <span class="token operator">&lt;</span> cpt_num<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            batch_size <span class="token operator">=</span> <span class="token punctuation">(</span>left_num <span class="token operator">+</span> nthreads <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> nthreads<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        size_t left_size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>left_num <span class="token operator">></span> tid <span class="token operator">*</span> batch_size<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            left_size <span class="token operator">=</span> batch_size<span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>left_num <span class="token operator">&lt;=</span> <span class="token punctuation">(</span>tid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> batch_size<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                left_size <span class="token operator">=</span> left_num <span class="token operator">-</span> tid <span class="token operator">*</span> batch_size<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token function">CRTS_dma_get</span><span class="token punctuation">(</span>
+                buf<span class="token punctuation">,</span>
+                input <span class="token operator">+</span> k <span class="token operator">*</span> cpt_num <span class="token operator">+</span> tid <span class="token operator">*</span> batch_size<span class="token punctuation">,</span>
+                left_size <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>type_t<span class="token punctuation">)</span>
+            <span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span>
+                size_t j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> left_size<span class="token punctuation">;</span> j <span class="token operator">+</span> <span class="token operator">+</span>
+            <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">// zijunx: ? ? // if (</span>
+                <span class="token punctuation">(</span> <span class="token operator">*</span> found_inf_ptr <span class="token operator">!=</span> <span class="token number">1.</span> f<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>
+                    std<span class="token double-colon punctuation">::</span><span class="token function">isinf</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> <span class="token keyword">float</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">||</span> std<span class="token double-colon punctuation">::</span><span class="token function">isnan</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> <span class="token keyword">float</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token punctuation">)</span>
+            <span class="token punctuation">)</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>
+                <span class="token punctuation">(</span>flag <span class="token operator">!=</span> <span class="token number">1.</span> f<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>
+                    std<span class="token double-colon punctuation">::</span><span class="token function">isinf</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> <span class="token keyword">float</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">||</span> std<span class="token double-colon punctuation">::</span><span class="token function">isnan</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">static_cast</span> <span class="token generic class-name"><span class="token operator">&lt;</span> <span class="token keyword">float</span> <span class="token operator">></span></span></span> <span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token punctuation">)</span>
+            <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">// * found_inf_ptr = 1.f;</span>
+                flag <span class="token operator">=</span> <span class="token number">1.</span> f<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>inv_scale <span class="token operator">==</span> <span class="token number">1.</span> f <span class="token operator">?</span> buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">:</span> buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">*</span> inv_scale<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">CRTS_dma_put</span><span class="token punctuation">(</span>
+        input <span class="token operator">+</span> k <span class="token operator">*</span> cpt_num <span class="token operator">+</span> tid <span class="token operator">*</span> batch_size<span class="token punctuation">,</span>
+        buf<span class="token punctuation">,</span>
+        left_size <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>type_t<span class="token punctuation">)</span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token function">CRTS_dma_put</span><span class="token punctuation">(</span>output <span class="token operator">+</span> tid<span class="token punctuation">,</span> <span class="token operator">&amp;</span> flag<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h3 id="3-3-State-dict"><a href="#3-3-State-dict" class="headerlink" title="3.3 State dict"></a>3.3 State dict</h3><p>state_dict主要方便打印以及checkpoint载入。</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">Float16OptimizerWithFloat16Params</span><span class="token punctuation">(</span>MixedPrecisionOptimizer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	<span class="token keyword">def</span> <span class="token function">state_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		state_dict<span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">:</span>
+			state_dict<span class="token punctuation">[</span><span class="token string">'grad_scaler'</span><span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">.</span>state_dict<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+	
+	<span class="token keyword">def</span> <span class="token function">load_dict</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>state_dict<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token keyword">if</span> <span class="token string">'grad_scaler'</span> <span class="token keyword">not</span> <span class="token keyword">in</span> state_dict<span class="token punctuation">:</span>
+			print_rank_0<span class="token punctuation">(</span><span class="token string">'***WARNING*** found an old checkpoint, will not '</span>
+                             <span class="token string">'load grad scaler ..'</span><span class="token punctuation">)</span>
+		<span class="token keyword">else</span><span class="token punctuation">:</span>
+			<span class="token keyword">if</span> self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">:</span>			
+				self<span class="token punctuation">.</span>grad_scaler<span class="token punctuation">.</span>load_dict<span class="token punctuation">(</span>state_dict<span class="token punctuation">[</span><span class="token string">'grad_scaler'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+			<span class="token keyword">else</span><span class="token punctuation">:</span>
+				print_rank_0<span class="token punctuation">(</span><span class="token string">'***WARNING*** fould the grad scaler in the '</span>
+                             <span class="token string">'checkpoint but it is None in the class. '</span>
+                             <span class="token string">'Skipping loading grad scaler ...'</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BF%9D%E4%BD%8F%E9%A5%AD%E7%A2%97/" class="category-chain-item">保住饭碗</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Megatron-LM/">#Megatron-LM</a>
+      
+        <a href="/tags/PyTorch/">#PyTorch</a>
+      
+        <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">#深度学习</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Megatron-LM中的loss-scale</div>
+      <div>http://example.com/posts/fc0334c8/</div>
+    </div>
+    <div class="license-meta">
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年6月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/posts/76dfb04d/" title="Megatron-LM中的权重初始化">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Megatron-LM中的权重初始化</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/posts/c00f223d/" title="大模型中的计算和内存占用理论分析">
+                        <span class="hidden-mobile">大模型中的计算和内存占用理论分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"XylJUzcCFV0DW60tfHHCHsRe-gzGzoHsz","appKey":"i0RWbIkHPI2iVhhLHGRm58Cd","path":"window.location.pathname","placeholder":"讲的不错，我简单说两句","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> <div style="font-size: 0.85rem"> <span id="jinrishici-sentence">正在加载今日诗词....</span> <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script> </div> <br> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
+  <script src=https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start --><script src="/js/timeliness.js"></script><!-- hexo injector body_end end --></body>
+</html>
